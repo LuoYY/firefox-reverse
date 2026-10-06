@@ -36,6 +36,7 @@ export default function SettingsPane({ store, providers, fetchModels, onClose })
   const [customProtocol, setCustomProtocol] = useState(initial.protocol || "openai");
   const [customReasoningEffort, setCustomReasoningEffort] = useState(initial.reasoningEffort || "auto");
   const [confirmTools, setConfirmTools] = useState(store.getConfirmTools ? store.getConfirmTools() : false);
+  const [globalSystemPrompt, setGlobalSystemPrompt] = useState(() => store.getGlobalSystemPrompt?.() || "");
   const [promptCacheMode, setPromptCacheMode] = useState(store.getPromptCacheMode ? store.getPromptCacheMode() : "auto");
   const [promptCacheTtl, setPromptCacheTtl] = useState(store.getPromptCacheTtl ? store.getPromptCacheTtl() : "default");
   const [contextStrategy, setContextStrategy] = useState(store.getContextStrategy ? store.getContextStrategy() : "projected");
@@ -176,6 +177,7 @@ export default function SettingsPane({ store, providers, fetchModels, onClose })
         p = { ...values, id: profileId };
       }
       store.setConfirmTools?.(confirmTools);
+      store.setGlobalSystemPrompt?.(globalSystemPrompt);
       store.setPromptCacheMode?.(promptCacheMode);
       store.setPromptCacheTtl?.(promptCacheTtl);
       store.setContextStrategy?.(contextStrategy);
@@ -319,6 +321,21 @@ export default function SettingsPane({ store, providers, fetchModels, onClose })
         <input type="checkbox" checked={confirmTools} onChange={e => { setConfirmTools(e.target.checked); setStatus(""); }} />
         改动型工具执行前需确认
       </label>
+
+      <section className="settings-pane__section">
+        <div className="settings-pane__section-title">全局提示词</div>
+        <label className="settings-pane__field">
+          全局附加 system 提示词
+          <textarea
+            rows={8}
+            value={globalSystemPrompt}
+            placeholder="例如：始终用中文回复，保留 English 技术术语。"
+            aria-describedby="global-system-prompt-hint"
+            onChange={e => { setGlobalSystemPrompt(e.target.value); setStatus(""); }}
+          />
+        </label>
+        <span id="global-system-prompt-hint" className="settings-pane__hint">保存后从下一轮对话生效，追加到内置 system 提示词；当前浏览器 profile 的所有模型配置与会话共享。留空使用内置提示词。</span>
+      </section>
 
       <section className="settings-pane__section">
         <div className="settings-pane__section-title">上下文与缓存</div>
