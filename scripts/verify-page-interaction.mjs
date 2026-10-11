@@ -19,6 +19,7 @@ const xul = path.join(path.dirname(executable), process.platform === "darwin" ? 
 const hash = createHash("sha256").update(await fs.readFile(xul)).digest("hex");
 assert.equal(hash, option("--xul-sha256"));
 const { MarionetteWire } = await import(pathToFileURL(path.resolve(option("--mcp-root"), "dist/bridge/marionetteWire.js")));
+const { JS_TOOLS, JS_CALLTOOL } = await import(pathToFileURL(path.resolve(option("--mcp-root"), "dist/bridge/chromeScripts.js")));
 const directory = await fs.mkdtemp(path.join(os.tmpdir(), "frx-page-test-"));
 const listen = server => new Promise((resolve, reject) => { server.once("error", reject); server.listen(0, "127.0.0.1", resolve); });
 const portServer = net.createServer();
@@ -96,6 +97,15 @@ try {
   check("legacy elements", (await call("elements", { limit: 2 })).count === 2);
   check("legacy eval", (await call("eval", { expression: "document.querySelector('#go').dataset.clicked" })).value === "yes");
   check("bounds", (await call("snapshot", { frameId: "all", limit: 1 })).truncated);
+  // Exercise the same AgentSession/ToolRouter entry used by external MCP, not
+  // just a separately constructed PageBackend. Fail before metadata fallback.
+  await wire.execute('return !!ChromeUtils.importESModule("resource:///modules/agentsidebar/Backends.sys.mjs").getBackends().page;');
+  const catalog = await wire.execute(JS_TOOLS);
+  check("71 live browser tools", catalog.count === 71 && catalog.missingDeclared.length === 0);
+  const routed = await wire.executeAsync(JS_CALLTOOL, ["page_find", { role: "button", name: "Continue" }, null]);
+  check("MCP dispatch semantic query", routed.ok && routed.data?.count === 1);
+  const clicked = await wire.executeAsync(JS_CALLTOOL, ["page_click", { ref: routed.data.elements[0].ref }, null]);
+  check("MCP dispatch reference click", clicked.ok);
   const image = await call("screenshot");
   check("screenshot dimensions", image.width > 100 && image.height > 100 && image.coordinateSpace === "top-viewport-css");
   if (options.includes("--screenshot")) await fs.writeFile(option("--screenshot"), Buffer.from(image._media[0].dataUrl.split(",")[1], "base64"));

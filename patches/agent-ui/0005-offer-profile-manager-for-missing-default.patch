@@ -22,8 +22,8 @@ diff --git a/toolkit/xre/nsAppRunner.cpp b/toolkit/xre/nsAppRunner.cpp
 +      }
 +    }
 +    if (unavailableDefault) {
-+      Output(true, "Firefox Reverse: default profile directory is missing or "
-+                   "not a directory; opening Profile Manager for user choice.\n");
++      PR_fprintf(PR_STDERR, "Firefox Reverse: default profile directory is missing or "
++                           "not a directory; opening Profile Manager for user choice.\n");
 +    }
 +    if (unavailableDefault || !mProfileSvc->GetStartWithLastProfile()) {
        // First check the old style profile manager

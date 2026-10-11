@@ -24,6 +24,7 @@ with tempfile.TemporaryDirectory(prefix="frx-startup-patch-") as temporary:
     for guard in ("!gfxPlatform::IsHeadless()", "!gDoProfileReset", "NS_SUCCEEDED(mProfD->Exists", "NS_SUCCEEDED(mProfD->IsDirectory", "ShowProfileManager(mProfileSvc, mNativeApp)"):
         assert guard in block, guard
     assert "Create" not in block and "Remove" not in block and "Unlock" not in block
+    assert "Output(" not in block, "Output opens a second modal dialog on Windows"
     assert changed[:start] == source.decode()[:source.decode().index("  if (wasDefaultSelection) {")]
     assert changed[end:] == source.decode()[source.decode().index("  // We always want to lock the profile", source.decode().index("  if (wasDefaultSelection) {")):]
     subprocess.run(["git", "apply", "--reverse", str(patch)], cwd=root, check=True)
