@@ -92,6 +92,10 @@ jobs:
           set -e
           test "$(git -C "$UPSTREAM" rev-parse HEAD)" = "$FIREFOX_REV"
           grep -Fq '"agent-sidebar"' "$UPSTREAM/browser/components/moz.build"
+          # A cached source tree must contain the native startup change too;
+          # copying sidebar modules alone must not produce a misleading release.
+          git -C "$UPSTREAM" apply --reverse --check \
+            "$GITHUB_WORKSPACE/patches/agent-ui/0005-offer-profile-manager-for-missing-default.patch"
 
       - name: 同步全部 additions 到源码树（复用已 bootstrap 的树，增量编）
         run: |
