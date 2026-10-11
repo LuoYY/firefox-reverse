@@ -79,10 +79,14 @@ try {
   check("nested reference click", (await call("click", { ref: found.elements[0].ref })).ok);
   check("ambiguous target rejected", /ambiguous_target/.test((await call("click", { frameId: frame, name: "Duplicate" })).error));
   check("semantic type treats text as value", (await call("type", { frameId: frame, label: "Account", text: "filled-value" })).ok);
+  await call("scroll", { ref: found.elements[0].ref });
+  const childRect = (await call("find", { frameId: frame, role: "button", name: "Continue" })).elements[0].rect;
+  check("nested frame coordinate click", (await call("click", { frameId: frame, x: childRect.x + 5, y: childRect.y + 5 })).ok);
   await wire.command("Marionette:SetContext", { value: "content" });
   await wire.command("WebDriver:SwitchToFrame", { id: 0 });
   await wire.command("WebDriver:SwitchToFrame", { id: 0 });
   check("nested click changes DOM", await wire.execute("return document.querySelector('#go').dataset.clicked === 'yes';"));
+  check("nested coordinates target correct frame", await wire.execute("return document.querySelector('#go').dataset.trusted === 'true';"));
   check("nested input changes DOM", await wire.execute("return document.querySelector('#account').value === 'filled-value';"));
   await wire.command("WebDriver:SwitchToFrame", { id: null });
   await wire.command("Marionette:SetContext", { value: "chrome" });

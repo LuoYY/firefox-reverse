@@ -101,10 +101,13 @@ if __name__ == "__main__":
     if binary.suffix == ".app":
         binary /= "Contents/MacOS/firefox"
     xul = binary.parent / ("XUL" if platform.system() == "Darwin" else "libxul.so")
+    digest = hashlib.sha256()
     with xul.open("rb") as stream:
-        digest = hashlib.file_digest(stream, "sha256").hexdigest()
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    digest = digest.hexdigest()
     assert digest == args.xul_sha256, "artifact hash mismatch"
     results = [probe(binary, mode, not args.baseline) for mode in ("default", "not-directory", "explicit", "environment", "headless")]
-    report = {"platform": platform.system(), "systemVersion": platform.release(), "xulSHA256": digest, "baseline": args.baseline, "checks": results, "limitations": ["Synthetic isolated application namespace, not a reproduction of the reporter's macOS 27 installation.", "No automatic data migration or profile locking bypass."]}
+    report = {"platform": platform.system(), "systemVersion": platform.mac_ver()[0] if platform.system() == "Darwin" else platform.release(), "xulSHA256": digest, "baseline": args.baseline, "checks": results, "limitations": ["Synthetic isolated application namespace, not a reproduction of the reporter's macOS 27 installation.", "No automatic data migration or profile locking bypass."]}
     Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(report, ensure_ascii=False, indent=2))
