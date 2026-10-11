@@ -14,7 +14,10 @@ const upstreamRoot = process.argv[2]
 const required = [
   "configure.sh",
   "default16.png",
+  "default22.png",
+  "default24.png",
   "default32.png",
+  "default48.png",
   "default64.png",
   "default128.png",
   "default256.png",
@@ -109,6 +112,10 @@ if (upstreamRoot) {
     if ((await digest(sourcePath)) !== (await digest(upstreamPath))) {
       fail(`upstream branding is stale: ${relative}`);
     }
+  }
+  const plist = await readFile(path.join(path.resolve(process.argv[2]), "browser/app/macbuild/Contents/Info.plist.in"), "utf8");
+  if (plist.includes("<key>CFBundleIconName</key>")) {
+    fail("macOS AppIcon still overrides firefox.icns; apply patches/branding first");
   }
 }
 

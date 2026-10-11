@@ -14,6 +14,11 @@ import subprocess
 import tempfile
 import time
 import zipfile
+from importlib.util import module_from_spec, spec_from_file_location
+
+branding_spec = spec_from_file_location("frx_branding", Path(__file__).with_name("verify-branding.py"))
+branding = module_from_spec(branding_spec)
+branding_spec.loader.exec_module(branding)
 
 
 def sha(path):
@@ -105,6 +110,7 @@ def validate(report, output):
             assert archive.testzip() is None
             archive.extractall(work)
         root = work / "firefox"
+        report["branding"] = branding.verify_package(root, commit)
         executable = root / "firefox.exe"
         report["binary_sha256"] = sha(executable)
         ini = configparser.ConfigParser()

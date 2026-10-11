@@ -48,7 +48,7 @@ touch /Applications/FirefoxReverse.app
 killall Dock; killall Finder
 ```
 
-> 注：当前 mozconfig 未启用 official branding → 默认走 `browser/branding/unofficial/`，故图标资源放在 `unofficial/`。
+品牌资源固定放在 `browser/branding/unofficial/`。仓库构建入口显式选择该目录，并检查实际生成的 `config.status`，不只依赖某台机器的默认值；不要启用 `--enable-official-branding`。
 
 ## 构建前检查
 
@@ -58,3 +58,20 @@ node scripts/check-branding-assets.mjs
 # additions 已同步到源码树后，再检查远端/本地 upstream 没有残留旧资源
 node scripts/check-branding-assets.mjs upstream
 ```
+
+上述源码检查不能证明最终包正确。构建后还需要核对选中的对象目录和真实打包资源：
+
+```sh
+python3 scripts/verify-branding.py --objdir /path/to/obj-dir
+python3 scripts/verify-branding.py --package /path/to/obj-dir/dist/firefox
+python3 scripts/verify-branding.py --package '/path/to/Firefox Reverse.app'
+python3 scripts/verify-branding.py --package /path/to/firefox-linux.tar.xz
+python3 scripts/verify-branding.py --package /path/to/firefox-windows.zip
+python3 scripts/tests/test-branding.py
+```
+
+检查包括：配置中的 branding/display name、`application.ini` 的 CodeName、`omni.ja` 中实际的 `chrome://branding` 映射、首页/关于页 logo 和字标、所有已打包语言的品牌名，以及 macOS Bundle 名称、标识、图标及 AppIcon 覆盖。检查不会修改包或用户 profile。Windows/Linux 检查页面资源和名称，不替代系统桌面图标的原生 UI 验收。
+
+`build.sh`、`package.sh`、中文重打包、Linux ARM64 构建及 Release 工作流已接入；候选包验证也按构建提交核对品牌资源。`package.sh` 只从当前 `MOZCONFIG` 对应的对象目录收集文件，不混入其它 `obj-*` 目录的旧包。直接运行 `mach` 会绕过仓库包装脚本，需手动执行以上检查。
+
+若校验发现 Nightly 或资源不一致，应先重新应用仓库品牌资源/补丁，再重新 configure 和构建；不要只重命名 `.app` 或删除用户配置来掩盖问题。2026-09-28 已通过干净 Git 导出资源、故障注入、打包入口和 Agent 自测；本次未做完整内核重编或发布。

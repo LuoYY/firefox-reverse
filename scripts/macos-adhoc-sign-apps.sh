@@ -16,7 +16,11 @@ if [[ ! -d "$UPSTREAM_DIR" ]]; then
 fi
 
 shopt -s nullglob
-apps=("$UPSTREAM_DIR"/obj-*/dist/firefox/*.app)
+if [[ -n "${2:-}" ]]; then
+  apps=("$2"/dist/firefox/*.app)
+else
+  apps=("$UPSTREAM_DIR"/obj-*/dist/firefox/*.app)
+fi
 shopt -u nullglob
 
 if [[ ${#apps[@]} -eq 0 ]]; then

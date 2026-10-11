@@ -6,6 +6,7 @@
 EXTRA_JS_MODULES.agentsidebar += [
     "modules/AddonBackend.sys.mjs",
     "modules/AgentEvalChild.sys.mjs",
+    "modules/AgentInteractionChild.sys.mjs",
     "modules/AgentLoop.sys.mjs",
     "modules/AgentSession.sys.mjs",
     "modules/Backends.sys.mjs",
@@ -21,7 +22,10 @@ EXTRA_JS_MODULES.agentsidebar += [
     "modules/NativeFingerprintPolicy.sys.mjs",
     "modules/NetworkBackend.sys.mjs",
     "modules/NotesBackend.sys.mjs",
+    "modules/PageAccessibility.sys.mjs",
     "modules/PageBackend.sys.mjs",
+    "modules/PageInteractionBackend.sys.mjs",
+    "modules/PageInteractionCore.sys.mjs",
     "modules/providers.sys.mjs",
     "modules/ReasoningEffort.sys.mjs",
     "modules/ScriptsBackend.sys.mjs",

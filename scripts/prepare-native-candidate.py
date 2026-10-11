@@ -10,6 +10,11 @@ import struct
 import subprocess
 import tarfile
 import zipfile
+from importlib.util import module_from_spec, spec_from_file_location
+
+branding_spec = spec_from_file_location("frx_branding", Path(__file__).with_name("verify-branding.py"))
+branding = module_from_spec(branding_spec)
+branding_spec.loader.exec_module(branding)
 
 
 def sha(filename):
@@ -57,6 +62,7 @@ else:
     resource_root = stage / "firefox"
     binary = resource_root / ("firefox.exe" if target.startswith("windows") else "firefox")
     xul = resource_root / ("xul.dll" if target.startswith("windows") else "libxul.so")
+branding_report = branding.verify_package(binary if suffix == ".dmg" else resource_root, commit)
 architecture = "arm64" if target.endswith("arm64") else "x86_64"
 if target.startswith("macos"):
     assert subprocess.check_output(["lipo", "-archs", str(xul)], text=True).strip() == architecture
@@ -90,7 +96,7 @@ with zipfile.ZipFile(resource_root / "omni.ja") as archive:
     assert b"#promiseXULFrameLoaderCreated" in extension_parent
     extension_parent_sha = hashlib.sha256(extension_parent).hexdigest()
 assert tag[1:] in expected.decode()
-modules = ["EnvironmentBackend", "NativeFingerprintPolicy", "ConfigStore", "SidebarTypography", "LlmClient"]
+modules = ["EnvironmentBackend", "NativeFingerprintPolicy", "ConfigStore", "SidebarTypography", "LlmClient", "PageBackend", "PageInteractionBackend", "PageInteractionCore", "AgentInteractionChild", "Tools"]
 with zipfile.ZipFile(resource_root / "browser/omni.ja") as archive:
     ui_prefix = "chrome/browser/content/browser/agent-sidebar/"
     bundle_sha = hashlib.sha256(archive.read(ui_prefix + "agent-sidebar.bundle.js")).hexdigest()
@@ -99,8 +105,10 @@ with zipfile.ZipFile(resource_root / "browser/omni.ja") as archive:
     for module in modules:
         expected = subprocess.check_output(["git", "show", f"{commit}:additions/browser/components/agent-sidebar/modules/{module}.sys.mjs"])
         assert archive.read(f"modules/agentsidebar/{module}.sys.mjs") == expected, f"stale module: {module}"
+    assert b"MIT License" in archive.read("modules/agentsidebar/PageAccessibility.sys.mjs"), "missing accessibility bundle/license"
     assert "右击或下拉显示历史" in archive.read("localization/zh-CN/browser/browserContext.ftl").decode()
 report = {"package": name, "packageSHA256": sha(package), "xulSHA256": sha(xul), "binaryArchitecture": architecture, "sidebarBundleSHA256": bundle_sha, "extensionParentSHA256": extension_parent_sha, "sourceCommit": commit, "buildID": build_id, "modules": modules, "status": "passed"}
+report["branding"] = branding_report
 (output / "PACKAGE-IDENTITY.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:
     stream.write(f"FRX_TEST_BINARY={binary}\nFRX_TEST_XUL_SHA={report['xulSHA256']}\n")

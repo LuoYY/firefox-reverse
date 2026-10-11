@@ -17,11 +17,16 @@ fi
 
 export MOZCONFIG="$mozconfig"
 export MOZ_BUILD_DATE=${MOZ_BUILD_DATE:-$(date -u +%Y%m%d%H%M%S)}
+upstream=$(cd "$upstream" && pwd)
 
 rm -f "$upstream/obj-aarch64-linux/buildid.h"
 cd "$upstream"
+node "$repo_root/scripts/check-branding-assets.mjs" "$upstream"
+./mach configure
+python3 "$repo_root/scripts/verify-branding.py" --objdir "$upstream/obj-aarch64-linux"
 ./mach build
 ./mach package
+python3 "$repo_root/scripts/verify-branding.py" --package "$upstream/obj-aarch64-linux/dist/firefox"
 
 package=$(find "$upstream/obj-aarch64-linux/dist" -maxdepth 1 -type f \
   -name 'firefox-*.linux-aarch64.tar.*' -print -quit)

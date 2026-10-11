@@ -48,6 +48,7 @@ for dmg in "$@"; do
   fi
 
   for app in "${apps[@]}"; do
+    python3 "$(cd "$(dirname "$0")" && pwd)/verify-branding.py" --package "$app"
     executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")"
     executable="$app/Contents/MacOS/$executable_name"
     architectures="$(lipo -archs "$executable")"

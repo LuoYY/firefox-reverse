@@ -1,0 +1,31 @@
+diff --git a/toolkit/xre/nsAppRunner.cpp b/toolkit/xre/nsAppRunner.cpp
+--- a/toolkit/xre/nsAppRunner.cpp
++++ b/toolkit/xre/nsAppRunner.cpp
+@@ -5275,7 +5275,26 @@
+   // We only ever show the profile selector if a specific profile wasn't chosen
+   // via command line arguments or environment variables.
+   if (wasDefaultSelection) {
+-    if (!mProfileSvc->GetStartWithLastProfile()) {
++    // Offer explicit recovery for a stale default entry. Never replace, create,
++    // migrate or unlock a profile automatically, and preserve explicit paths.
++    bool unavailableDefault = false;
++    if (!gfxPlatform::IsHeadless() && !gDoProfileReset && mProfD) {
++      bool exists = false;
++      if (NS_SUCCEEDED(mProfD->Exists(&exists))) {
++        unavailableDefault = !exists;
++        if (exists) {
++          bool isDirectory = true;
++          if (NS_SUCCEEDED(mProfD->IsDirectory(&isDirectory))) {
++            unavailableDefault = !isDirectory;
++          }
++        }
++      }
++    }
++    if (unavailableDefault) {
++      PR_fprintf(PR_STDERR, "Firefox Reverse: default profile directory is missing or "
++                           "not a directory; opening Profile Manager for user choice.\n");
++    }
++    if (unavailableDefault || !mProfileSvc->GetStartWithLastProfile()) {
+       // First check the old style profile manager
+       rv = ShowProfileManager(mProfileSvc, mNativeApp);
+     } else if (profile && profile->GetShowProfileSelector()) {
