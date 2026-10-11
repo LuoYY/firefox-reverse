@@ -110,6 +110,28 @@ try {
   check("MCP dispatch semantic query", routed.ok && routed.data?.count === 1);
   const clicked = await wire.executeAsync(JS_CALLTOOL, ["page_click", { ref: routed.data.elements[0].ref }, null]);
   check("MCP dispatch reference click", clicked.ok);
+  const workspace = path.join(directory, "workspace");
+  await fs.mkdir(workspace);
+  const tool = (name, args) => wire.executeAsync(JS_CALLTOOL, [name, args, workspace]);
+  check("Agent workspace write", (await tool("fs_write", { path: "work/probe.txt", content: "agent-workspace-ok" })).ok);
+  check("Agent workspace read", (await tool("fs_read", { path: "work/probe.txt" })).data?.content === "agent-workspace-ok");
+  const node = await tool("run_node", { code: "console.log(require('fs').readFileSync('work/probe.txt','utf8'))" });
+  assert(node.ok && node.data?.exitCode === 0 && node.data.output.includes("agent-workspace-ok"), `Agent Node tool: ${JSON.stringify(node)}`);
+  checks.push("Agent Node execution");
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  check("Agent network capture starts", (await tool("net_capture", { action: "start", urlPattern: origin + "/*", captureBody: false })).ok);
+  try {
+    check("Agent fetch", (await call("eval", { expression: `fetch(${JSON.stringify(origin + "/network-smoke")}).then(r=>r.status)` })).value === 200);
+    let network;
+    for (let i = 0; i < 30; i++) {
+      network = await tool("net_list", { urlPattern: origin + "/network-smoke", limit: 10 });
+      if (network.data?.requests?.some(r => r.status === 200)) break;
+      await delay(100);
+    }
+    check("Agent captured network response", network.data?.requests?.some(r => r.status === 200));
+  } finally {
+    check("Agent network capture stops", (await tool("net_capture", { action: "stop" })).ok);
+  }
   const image = await call("screenshot");
   check("screenshot dimensions", image.width > 100 && image.height > 100 && image.coordinateSpace === "top-viewport-css");
   if (options.includes("--screenshot")) await fs.writeFile(option("--screenshot"), Buffer.from(image._media[0].dataUrl.split(",")[1], "base64"));
