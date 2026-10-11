@@ -311,12 +311,13 @@ cd upstream && ./mach build && ./mach package
 
 ## 📝 版本更新记录
 
-### v0.26.0（候选，2026-10-11）
+### v0.26.0（正式版，2026-10-11）
 - **页面定位（Issue #15）**：新增 `page_frames/page_snapshot/page_find`，支持 role/name/label、open shadow root 和跨域嵌套 iframe；`page_click/type/scroll` 可使用短引用，跳转后旧引用失效。坐标点击使用选定 frame 的 viewport CSS 像素，截图返回坐标系与缩放信息。旧 selector/text 调用保持兼容，工具总数 71。见[页面定位](docs/page-interaction.md)。
 - **启动兼容（Issue #18 排查支持）**：独立环境补充有效的 `-new-instance`；默认 profile 确认丢失时提供原生管理器供用户选择，不自动迁移、重置或解锁。增加只读环境/安装默认项诊断。报告者 macOS 27 根因仍未确认，不把相关日志或启动参数当作完整修复证明。
 - **品牌构建校验**：显式选择 Firefox Reverse 品牌目录，校验构建配置与最终包内名称、首页/关于页图标、字标、语言品牌名及 macOS 图标；发现 Nightly 回退时阻止发布。只收集当前对象目录产物，详见[品牌构建说明](patches/branding/README.md)。
 - **配套 MCP v0.4.0**：启动分组 `all/direct/delegate`，默认 23 个入口不变；工具目录支持按需过滤，不强制 Agent 工作流。
-- **候选验收范围**：macOS 26.7.1 ARM64 通过 213 项指纹、33 项页面/Agent、5 类启动边界检查；Linux x86_64 对应 182/33/5，GPU/MSAA 和 Arial/Times 缺失用例未验证。Intel 包在 Apple Silicon Rosetta 下通过 213/33，不能等同 Intel 实机。Windows/Linux ARM64 已构建并通过包身份检查，原生 CI 尚未完成，因此本候选尚未正式发布。
+- **多平台验收**：macOS ARM64/Intel、Windows x86_64、Linux x86_64/ARM64 原生指纹检查分别通过 213/197/212/182/182 项，每个平台另通过 33 项页面/Agent 检查。Mac ARM64 与 Linux x86_64 各通过 5 类启动边界；Windows 另通过 6 次截图/退出及 Ledger 回归。[CI 记录与报告](https://github.com/WhiteNightShadow/firefox-reverse/actions/runs/38126954615)。Intel Mac/两种 Linux 的无头 runner 未验证 GPU/MSAA，Linux 缺少 Arial/Times 字体用例；结果不代表第三方网站通过率或 macOS 27 原问题已解决。
+- **正式安装包**：[v0.26.0 Release](https://github.com/WhiteNightShadow/firefox-reverse/releases/tag/v0.26.0) 提供五目标六包，附件仅保留安装/便携包。macOS 为 ad-hoc 签名，未作 Apple Developer ID 公证。覆盖安装前完整退出旧应用，保留原有 profile 与指纹环境目录。
 
 ### v0.25.0（2026-09-17）
 - **侧栏文字大小（Issue #17）**：设置中新增 90%–180% 字号比例及默认复位，覆盖聊天、Markdown、设置和环境编辑；按 profile 持久化，不修改网页缩放或指纹 DPR。
