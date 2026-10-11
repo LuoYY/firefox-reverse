@@ -130,8 +130,8 @@ export class PageInteractionCore {
     element.dispatchEvent(new win.Event("input", { bubbles: true }));
     element.dispatchEvent(new win.Event("change", { bubbles: true }));
     if (args.submit) {
-      element.dispatchEvent(new win.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-      element.dispatchEvent(new win.KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
+      element.dispatchEvent(new win.KeyboardEvent("keydown", { key: "Enter", keyCode: 13, which: 13, bubbles: true }));
+      element.dispatchEvent(new win.KeyboardEvent("keyup", { key: "Enter", keyCode: 13, which: 13, bubbles: true }));
     }
     return { ok: true, filled: true, length: args.text.length };
   }

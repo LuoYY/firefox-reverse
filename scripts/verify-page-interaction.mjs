@@ -32,7 +32,7 @@ const server = http.createServer((request, response) => {
   const cross = origin.replace("127.0.0.1", "localhost");
   const fixture = `<style>button,input{margin:8px;padding:12px}iframe{width:600px;height:250px}body{margin:0}</style>
     <button id="go" onclick="this.dataset.clicked='yes';this.dataset.trusted=String(event.isTrusted)" aria-label="Continue">Go</button>
-    <label for="account">Account</label><input id="account"><input type="password" aria-label="Secret" value="never-in-snapshot">
+    <label for="account">Account</label><input id="account" onkeyup="this.dataset.enter=String(event.key==='Enter' && event.keyCode===13 && event.which===13)"><input type="password" aria-label="Secret" value="never-in-snapshot">
     <button>Duplicate</button><button>Duplicate</button><button hidden>Hidden</button>
     <div id="shadow"></div><script>document.querySelector('#shadow').attachShadow({mode:'open'}).innerHTML='<button>Shadow</button>';</script>`;
   response.end(`<!doctype html><title>FRX Page Fixture</title>${fixture}${request.url === "/" ? `<iframe src="${cross}/child"></iframe>` : request.url === "/child" ? `<iframe src="${origin}/nested"></iframe>` : ""}`);
@@ -78,7 +78,7 @@ try {
   check("semantic nested lookup", found.count === 1);
   check("nested reference click", (await call("click", { ref: found.elements[0].ref })).ok);
   check("ambiguous target rejected", /ambiguous_target/.test((await call("click", { frameId: frame, name: "Duplicate" })).error));
-  check("semantic type treats text as value", (await call("type", { frameId: frame, label: "Account", text: "filled-value" })).ok);
+  check("semantic type treats text as value", (await call("type", { frameId: frame, label: "Account", text: "filled-value", submit: true })).ok);
   await call("scroll", { ref: found.elements[0].ref });
   const childRect = (await call("find", { frameId: frame, role: "button", name: "Continue" })).elements[0].rect;
   check("nested frame coordinate click", (await call("click", { frameId: frame, x: childRect.x + 5, y: childRect.y + 5 })).ok);
@@ -88,6 +88,7 @@ try {
   check("nested click changes DOM", await wire.execute("return document.querySelector('#go').dataset.clicked === 'yes';"));
   check("nested coordinates target correct frame", await wire.execute("return document.querySelector('#go').dataset.trusted === 'true';"));
   check("nested input changes DOM", await wire.execute("return document.querySelector('#account').value === 'filled-value';"));
+  check("nested input preserves legacy Enter fields", await wire.execute("return document.querySelector('#account').dataset.enter === 'true';"));
   await wire.command("WebDriver:SwitchToFrame", { id: null });
   await wire.command("Marionette:SetContext", { value: "chrome" });
   const topButton = (await call("find", { role: "button", name: "Continue" })).elements[0];
