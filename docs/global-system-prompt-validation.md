@@ -37,6 +37,13 @@ bash scripts/selftest-agent-tools.sh
 
 结果：bundle 构建、25 个 Node selftest、branding asset 检查、19 个 Python branding test 和 startup diagnostics 检查全部通过，整个脚本退出码 0。Windows Node 23.9.0 的 25 个 Node selftest 也全部退出 0。
 
+## 可审阅证据
+
+- 版本化证据目录：[`docs/verification/global-system-prompt-20261011/`](verification/global-system-prompt-20261011/)
+- 原生报告：[`native-report.json`](verification/global-system-prompt-20261011/native-report.json)
+- 原生设置截图：[`settings.png`](verification/global-system-prompt-20261011/settings.png)
+- 完整回归和退出诊断日志：[`README.md`](verification/global-system-prompt-20261011/README.md)
+
 ## 原生验收结果
 
 脚本通过 Marionette 操作 `SidebarController.show("viewAgentSidebar")` 中的真实 React 设置界面，并检查实际发送到本机端点的请求。
@@ -54,7 +61,7 @@ bash scripts/selftest-agent-tools.sh
 
 最终共检查 11 条实际请求，两次浏览器退出码均为 0。自动续跑用真实 `page_info` 工具和 `maxRounds: 1` 触发，未 mock AgentSession 或 AgentLoop。其余对话通过侧栏发送按钮触发。
 
-按现有 `verify-windows-package.py` 的 native 测试约定，退出前显式关闭测试打开的 ledger SQLite 连接；否则 `memory.sqlite` 会阻止 shutdown。此为测试 fixture 收尾步骤，不宣称本 PR 修复了该独立的 ledger 生命周期问题。浏览器日志保留这一限制，未把强制终止计为正常退出。
+按现有 `verify-windows-package.py` 的 native 测试约定，退出前显式关闭测试打开的 ledger SQLite 连接；否则 `memory.sqlite` 会阻止 shutdown。此为测试 fixture 收尾步骤，不宣称本 PR 修复了该独立的 ledger 生命周期问题。脚本明确执行此收尾步骤，未把强制终止计为正常退出。
 
 ## Windows libuv 退出异常定位
 

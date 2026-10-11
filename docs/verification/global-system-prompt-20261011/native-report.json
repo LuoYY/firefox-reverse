@@ -1,0 +1,97 @@
+{
+  "status": "passed",
+  "platform": "Windows",
+  "package_sha256": "0557526d18bf59df283ed2629b7d6ff4a601e168c0f6d6befb99ac1c54d7f50d",
+  "checks": [
+    "sidebar UI save and reopen preserves multiline text",
+    "sidebar send appends custom policy once after built-in system",
+    "full browser restart persists UI value and request policy",
+    "UI model selection and new conversation retain profile-wide policy",
+    "reopening existing conversation through history keeps current shared policy",
+    "editing settings during real in-flight request leaves all current-round requests unchanged; next user turn uses new policy",
+    "real AgentLoop hits maxRounds and auto-restarts with identical system, no duplicate append",
+    "clearing in UI restores byte-identical built-in prompt"
+  ],
+  "browser_exit_codes": [
+    0,
+    0
+  ],
+  "resource_sha256": {
+    "modules/agentsidebar/AgentSession.sys.mjs": "e2fe3af7ecdc496fc7c5fbfd7c5588801edf76ab4796e3ad344abffaa0361584",
+    "modules/agentsidebar/ConfigStore.sys.mjs": "f4ac619318ece5662224db0c513dea2e4f7d34176394b5e46dd2be8a7d6b13d2",
+    "chrome/browser/content/browser/agent-sidebar/agent-sidebar.bundle.js": "5a623a827fbef18f7238666738ebbcdf684015d8f2d583ffea29341ebe711e62",
+    "chrome/browser/content/browser/agent-sidebar/agent-panel.css": "84767158963d50c11fa6809f82cfe4f92c4026e37c369d05d10b2e9c171c4da6"
+  },
+  "xul_sha256": "73e555a9fcfacd1f2cbbdb9a1f409d467f84057973e6625bd19a27ea3a6f4b21",
+  "build": "20261011033023",
+  "version": "153.0a1",
+  "release": "0.26.0",
+  "requests": [
+    {
+      "task": "NATIVE_FIRST",
+      "model": "model-b",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_RESTART",
+      "model": "model-b",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_SWITCH",
+      "model": "model-a",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_HISTORY",
+      "model": "model-a",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_RUNNING",
+      "model": "model-a",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_RUNNING",
+      "model": "model-a",
+      "system_sha256": "555e261c7c3e1a95b3dc40887e754580d5e95fdaf816567b9639d4899cf434ee",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_AFTER",
+      "model": "model-a",
+      "system_sha256": "0a0f92cf52b391e8435431ea6ccbe2b77be8fcb6638cd2a8f3f8e85065c390b2",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_AUTO",
+      "model": "model-a",
+      "system_sha256": "ca47925e0abff332d7671334e6534202664fdec78e8b44b34bff236870667bc6",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_AUTO",
+      "model": "model-a",
+      "system_sha256": "ca47925e0abff332d7671334e6534202664fdec78e8b44b34bff236870667bc6",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_AUTO",
+      "model": "model-a",
+      "system_sha256": "ca47925e0abff332d7671334e6534202664fdec78e8b44b34bff236870667bc6",
+      "custom_policy_count": 1
+    },
+    {
+      "task": "NATIVE_DEFAULT",
+      "model": "model-a",
+      "system_sha256": "0a58358064bf6b9da065ddb1ca0abec7f914a03df56b3634b873d18d11ec08af",
+      "custom_policy_count": 0
+    }
+  ]
+}

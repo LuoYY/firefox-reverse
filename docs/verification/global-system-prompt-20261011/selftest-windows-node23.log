@@ -1,0 +1,409 @@
+selftest-markdown.mjs exit=0
+PASS headings, formatting, quotes, nested lists, task lists and GFM tables
+PASS code whitespace and incomplete streaming Markdown remain readable
+PASS raw HTML stays text, privileged URLs are blocked, images do not auto-load
+PASS history, completed steps and live steps render Markdown; tool summaries stay text
+Markdown selftest: all passed
+selftest-addons.mjs exit=0
+[1] AMO search + installed list
+  ✓ AMO search returns bounded installRef
+  ✓ search exposes permissions and marks metadata untrusted
+  ✓ search filters by current Firefox version and limit
+  ✓ list excludes system extensions by default
+  ✓ list can include protected extensions for diagnostics
+  ✓ get reports options-page availability
+[2] enable/disable + options page
+  ✓ disable uses AddonManager permission path
+  ✓ enable restores extension
+  ✓ open_options returns page-automation continuation
+[3] AMO-only install + signature rollback
+  ✓ install requires explicit confirm:true
+  ✓ signed AMO extension installs successfully
+  ✓ AMO hash is passed to AddonManager
+  ✓ unsigned result is rolled back even if the build permits it
+  ✓ non-AMO XPI URL is rejected before AddonManager
+[4] uninstall + protected extension boundary
+  ✓ uninstall requires explicit confirm:true
+  ✓ system extension cannot be modified
+  ✓ confirmed uninstall removes user extension
+[5] ToolRouter registration/confirmation
+  ✓ two additive addon tools register
+  ✓ read-only query skips confirmation; lifecycle management requires it
+
+AddonBackend selftest: 19 passed, 0 failed
+selftest-config.mjs exit=0
+isPersistent: false (Node 下应为 false → 内存 backend)
+
+OK   默认 activeProvider: got="deepseek" want="deepseek"
+OK   set/get activeProvider: got="openai" want="openai"
+OK   默认 apiKey 为空: got="" want=""
+OK   set/get apiKey: got="<synthetic-key>" want="<synthetic-key>"
+OK   clear apiKey: got="" want=""
+OK   默认 model 为空: got="" want=""
+OK   set/get model: got="deepseek-reasoner" want="deepseek-reasoner"
+OK   默认 custom reasoning effort: got="auto" want="auto"
+OK   custom reasoning effort 规范化: got="high" want="high"
+OK   无效 custom reasoning effort 回退 auto: got="auto" want="auto"
+OK   reasoning effort 支持 max: got=true want=true
+OK   normalize 可用自定义 fallback: got="medium" want="medium"
+OK   默认启用 Provider 提示缓存: got="auto" want="auto"
+OK   提示缓存可关闭: got="off" want="off"
+OK   缓存 TTL 持久化: got="1h" want="1h"
+OK   默认使用持久化上下文投影: got="projected" want="projected"
+OK   上下文策略可一键回退旧模式: got="legacy" want="legacy"
+OK   默认全局 system 提示词为空: got="" want=""
+OK   保存全局 system 提示词保留原文: got="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  " want="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  "
+OK   重新创建 store 后读取同一持久化 backend: got="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  " want="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  "
+OK   旧配置自动迁移成一条命名配置: got=1 want=1
+OK   同渠道可保存多账号: got=2 want=2
+OK   新建配置自动选中: got="mp_mv3vcfqd_cf4uei" want="mp_mv3vcfqd_cf4uei"
+OK   当前配置读取账号 B Key: got="sk-account-b" want="sk-account-b"
+OK   历史配置切回账号 A: got="sk-account-a" want="sk-account-a"
+OK   切换模型配置保留全局提示词: got="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  " want="  用中文回复，保留 English 技术术语。\n\n保留多行格式。  "
+OK   清空全局 system 提示词: got="" want=""
+OK   复制配置生成独立 id: got=false want=false
+OK   删除复制项不影响原配置: got=2 want=2
+OK   迁移当前渠道和其它已保存渠道: got=2 want=2
+OK   迁移保留其它渠道 Key: got="legacy-custom" want="legacy-custom"
+
+ALL PASS
+selftest-global-system-prompt.mjs exit=0
+Global system prompt: default, append, reload, clear and automatic restart passed
+selftest-typography.mjs exit=0
+Sidebar typography: default preservation, bounds, persistence and no cumulative scaling passed
+selftest-mozbuild.mjs exit=0
+moz.build order, parent registration, pinned release baseline, locale defaults, and fingerprint isolation: OK (32 files)
+selftest-providers.mjs exit=0
+OK   normalize 去尾斜杠: got="https://a.com/v1"
+OK   normalize 剥 chat/completions: got="https://a.com/compatible-mode/v1"
+OK   normalize 剥 messages: got="https://a.com/v1"
+OK   normalize 剥 models: got="https://a.com/v1"
+OK   chatPath 无版本段: got="/v1/chat/completions"
+OK   chatPath 带 /v1: got="/chat/completions"
+OK   chatPath 带 /v4: got="/chat/completions"
+OK   chatPath anthropic 带 /v1: got="/messages"
+OK   chatPath anthropic 无版本段: got="/v1/messages"
+OK   chatPath gemini 兼容根 /v1beta/openai: got="/chat/completions"
+OK   chatPath /v1beta 结尾: got="/chat/completions"
+OK   chatPath host 含 v1 不误判: got="/v1/chat/completions"
+OK   custom chat URL 不翻倍: got="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+OK   custom reasoning 默认不发字段: got=undefined
+OK   custom reasoning 默认保留 temperature: got=0.7
+OK   custom reasoning high 写入请求: got="high"
+OK   显式 reasoning 不发 temperature: got=undefined
+OK   reasoning override 优先: got="xhigh"
+OK   Anthropic 不误发 OpenAI reasoning_effort: got=undefined
+OK   命名配置 B 读取独立 Key: got="<synthetic-key-b>"
+OK   命名配置 B 读取独立端点: got="https://second.example.com/v1/chat/completions"
+OK   命名配置 B 读取独立模型: got="model-b"
+OK   切回命名配置 A: got=["<synthetic-key-a>","model-a"]
+OK   无版本段 → /v1/models: got=["m-alpha","m-beta"]
+OK   带版本段 → {base}/models: got=["m-alpha","m-beta"]
+OK   误贴完整 chat 端点也能拉: got=["m-alpha","m-beta"]
+OK   带 key 通过鉴权: got=["m-alpha","m-beta"]
+OK   gemini 兼容根 → 首选 {base}/models: got=["m-alpha","m-beta"]
+OK   Anthropic 风格 x-api-key 鉴权: got=["m-alpha","m-beta"]
+OK   401 → 报 Key 问题: got=true
+OK   文档页 → 列出全部尝试: got=true
+OK   文档页 → 提示疑似网页: got=true
+OK   空 URL 提示: got="请先填写 Base URL"
+OK   缺协议头提示: got=true
+
+ALL PASS
+selftest-opencode.mjs exit=0
+PASS local gateway reproduces 400 MissingSessionID without header
+PASS both protocols, auxiliary calls and recreated clients share session identity
+PASS session routing is independent of prompt caching and model choice
+PASS independent conversations, UI fallback and invalid/missing session handling
+PASS persisted thread identity survives reload; imported conversation gets its own identity
+PASS streaming, optional-field fallback and transient retry preserve headers
+PASS Anthropic streaming uses the same request identity
+PASS real AgentLoop tool calls, handoff compression and final summary keep the same header
+PASS model discovery identifies the client without inventing a conversation
+PASS only official OpenCode API endpoints receive the new headers
+OpenCode contract selftest: all passed (local HTTP only)
+selftest-usage.mjs exit=0
+  ✓ OpenAI cached_tokens normalized
+  ✓ OpenAI output/reasoning normalized
+  ✓ DeepSeek hit/miss normalized
+  ✓ Anthropic logical input normalized
+  ✓ Anthropic cache read/write normalized
+  ✓ usage aggregation sums requests and input
+  ✓ cache hit rate uses logical input
+  ✓ missing provider usage is safely ignored
+
+Usage selftest: 8 passed, 0 failed
+selftest-prompt-cache.mjs exit=0
+  ✓ custom OpenAI request carries cache key
+  ✓ per-call maxTokens is honored
+  ✓ DeepSeek uses automatic cache without unsupported fields
+  ✓ OpenAI-compatible streams request final usage counters
+  ✓ Anthropic native cache control is applied
+  ✓ cache-field 4xx retries once without failing the chat
+  ✓ fallback removes rejected cache field
+  ✓ client remembers incompatible gateway
+  ✓ endpoint compatibility survives client recreation
+  ✓ stream_options 4xx retries and preserves streaming output
+  ✓ stream compatibility fallback removes only optional request field
+  ✓ stream usage survives compatibility fallback
+
+Prompt cache selftest: 12 passed, 0 failed
+selftest-conversations.mjs exit=0
+  ✓ 初始无线程
+  ✓ createThread 返回空线程
+  ✓ 列表含 1 条
+  ✓ appendMessage 落入
+  ✓ 首条 user 消息自动成标题
+  ✓ assistant 消息追加
+  ✓ 模型历史使用持久化投影并从安全边界续接
+  ✓ 投影不删除 UI 完整历史
+  ✓ 会话累计 Usage 持久化
+  ✓ 投影写盘失败回滚到旧版本
+  ✓ 手动停止写入取消边界
+  ✓ 下一轮消费取消边界
+  ✓ 取消边界只消费一次
+  ✓ 导出包格式带版本
+  ✓ 导出不携带本机目录和环境绑定
+  ✓ 导入生成新 id 并保留消息
+  ✓ 导入会话保持静止且不绑定本机资源
+  ✓ 导入不携带运行期投影和 Usage
+  ✓ 拒绝非 Firefox Reverse 会话 JSON
+  ✓ 最近更新的线程排在前
+  ✓ 摘要带消息计数
+  ✓ renameThread 生效
+  ✓ deleteThread 仅删除目标线程，导入和长会话仍保留
+
+ConversationStore 自测：23 passed, 0 failed
+selftest-ledger-sql.mjs exit=0
+[1] workspace/site 使用完整 SQL allowlist
+  ✓ workspace 分支选择固定 SQL
+  ✓ site 分支选择固定 SQL
+  ✓ 两分支封顶删除也来自固定 SQL
+[2] 未知列 fail-closed
+  ✓ 未知/恶意列名在执行前拒绝
+[3] 外部 workspace/site 值只走绑定参数
+  ✓ workspace payload 不进入 SQL 文本
+  ✓ workspace payload 通过 :v 绑定
+  ✓ workspace INSERT 继续使用绑定参数
+  ✓ site payload 不进入 SQL 文本
+  ✓ site payload 通过 :v 绑定
+  ✓ site INSERT 继续使用绑定参数
+[4] dropIds 使用固定占位符 SQL
+  ✓ 多 ID 去重使用单条占位符 SQL
+  ✓ 全部 drop id 作为数组参数一次绑定
+  ✓ 恶意 drop id 不进入 SQL 文本
+  ✓ 批量去重只执行一条语句
+  ✓ 占位符数量由整数 count 唯一决定
+  ✓ 非法 count 0 在生成 SQL 前拒绝
+  ✓ 非法 count -1 在生成 SQL 前拒绝
+  ✓ 非法 count 1.5 在生成 SQL 前拒绝
+  ✓ 非法 count NaN 在生成 SQL 前拒绝
+  ✓ 非法 count Infinity 在生成 SQL 前拒绝
+
+ledger SQL selftest: 20 passed, 0 failed
+selftest-context-projection.mjs exit=0
+  ✓ cutoff is a safe user boundary
+  ✓ oversized history produces a projection plan
+  ✓ projected history preserves task anchor then summary
+  ✓ projected tail starts safely and is smaller
+  ✓ full history remains untouched
+  ✓ incremental projection carries previous summary
+  ✓ projection source is bounded
+  ✓ corrupt projection falls back to full history
+  ✓ too-short history is never projected
+  ✓ 50-turn projected input remains bounded
+  ✓ 50-turn projection cuts real input by more than 80%
+
+Context projection selftest: 11 passed, 0 failed
+selftest-context-runtime.mjs exit=0
+  ✓ Agent result remains unchanged
+  ✓ system prompt stays byte-stable
+  ✓ dynamic context is not placed in system
+  ✓ dynamic context is attached to current user task
+  ✓ tool specs use deterministic ordering
+  ✓ all main requests share one cache key
+  ✓ large tool result is persisted before folding
+  ✓ model context keeps artifact path and result tail
+  ✓ folded tool output is bounded
+  ✓ tool result keeps its assistant tool-call parent
+  ✓ usage callback covers every main request
+  ✓ legacy strategy preserves previous tool-result behavior
+
+Context runtime selftest: 12 passed, 0 failed
+selftest-skills.mjs exit=0
+  OK 解析 Skill 名称
+  OK 解析折叠描述
+  OK 保留正文
+  OK 无 frontmatter 时安全降级
+  OK 始终列出内置 Skill 元数据
+  OK 发现工作区 Skill
+  OK 按名称读取完整 SKILL.md
+  OK 列出 Skill 附加资源
+  OK 大 Skill 支持按 nextOffset 分段读取
+  OK 读取 Skill 文本资源
+  OK 拒绝越过 Skill 根目录的路径
+
+SkillRegistry 自测：11 passed, 0 failed
+selftest-stream.mjs exit=0
+  ✓ 正文累积: "你好，世界"
+  ✓ onDelta 增量回调 2 次
+  ✓ tool_calls 累积为 1 条
+  ✓ tool_call name 拼接正确
+  ✓ tool_call arguments 分片拼接正确: {"query":"sign"}
+  ✓ finish_reason 解析
+  ✓ usage 解析
+  ✓ 跨网络分块边界仍正确累积
+
+流式解析自测：8 passed, 0 failed
+selftest-retry.mjs exit=0
+[1] 502(upstream) 两次后重试成功
+  ✓ 502×2 后第 3 次成功（fetch 调用 3 次）
+  ✓ 重试后拿到正常响应
+[2] 400 不重试（请求错误，重试无意义）
+  ✓ 400 直接抛、不重试（fetch 调用 1 次）
+[3] 持续 502 → 重试耗尽后抛（带提示）
+  ✓ 502 重试 3 次后抛、消息含「重试」（fetch 3 次）
+
+重试自测：4 passed, 0 failed
+selftest-anthropic.mjs exit=0
+[1] toAnthropicMessages 翻译 + 连续 tool_result 合并
+  ✓ system 提取
+  ✓ 消息数=4（连续 tool_result 合并进一个 user）: 4
+  ✓ 首条 user text
+  ✓ assistant tool_use + input JSON 解析
+  ✓ 两条 tool_result 合并到一个 user
+  ✓ 末 assistant text
+[2] vision 图文 user 块翻译
+  ✓ image_url dataURL → anthropic image(base64)
+[3] buildRequest(anthropic)
+  ✓ URL=/v1/messages: http://h:8080/v1/messages
+  ✓ headers x-api-key + Bearer + anthropic-version
+  ✓ body model/max_tokens/messages
+  ✓ anthropic 不发 temperature（新 Claude 模型已弃用，发了会 400）
+  ✓ anthropic 不误发 OpenAI reasoning_effort
+  ✓ tools → input_schema(去掉 parameters)
+[4] parseResponse(anthropic)
+  ✓ text 块 → content
+  ✓ tool_use → OpenAI 形 toolCalls
+  ✓ stop_reason → finishReason
+[5] Anthropic stream 合并 message_start + message_delta usage
+  ✓ Anthropic stream content/finish parsed
+  ✓ Anthropic stream usage fields merged
+
+Anthropic 适配自测：18 passed, 0 failed
+selftest-toolrouter.mjs exit=0
+[1] ToolRouter 注册 + backend 门控
+  ✓ 仅注册有 backend 的工具: ["code_search","page_eval"]（page_navigate 因无 backend 被门控掉）
+  ✓ listSpecs() 形状符合 OpenAI tools
+[2] dispatch 信封语义
+  ✓ 正常派发 → ok + data
+  ✓ 未知工具 → ok:false unknown
+  ✓ 缺必填 → ok:false 指出字段
+  ✓ handler 抛错 → 兜成 ok:false error
+  ✓ 超大结果 → 截断标记
+[3] AgentLoop tool_use 闭环（mock LLM）
+  ✓ LLM 收到了 tools 规格
+  ✓ 最终答复来自第二轮（工具结果回灌后）
+  ✓ 两轮收敛 final（rounds=2）
+  ✓ 记录了 1 次 code_search 调用
+  ✓ 工具调用结果信封正确
+  ✓ 消息序列含 assistant(tool_calls)+tool(结果) 回灌
+  ✓ onEvent 推送了 tool_call/tool_result/final
+[4] 改动型工具的用户确认门控（A3）
+  ✓ page_eval 标记为需确认
+  ✓ code_search 只读 → 免确认
+  ✓ confirm=false → 工具被拒(denied)，不执行
+  ✓ 拒绝路径推送 confirm_request/result 事件
+  ✓ confirm=true → 正常执行(page_eval=42)
+  ✓ autoApprove → 跳过确认直接执行
+  ✓ 需确认但无回调且非 autoApprove → 默认安全拒绝
+[5] 全 backend → 全工具注册（6 能力 + 页面自动操作）
+  ✓ 全部 29 个工具注册（缺：无）
+  ✓ 确认标记正确（改动型需确认 / 只读免确认）
+  ✓ 工作目录工具均免确认（自动执行模式）
+  ✓ fs_write 可派发
+  ✓ run_node 可派发
+  ✓ 无 workspace backend → fs_/run_ 不注册
+  ✓ find_param_entry 可派发
+  ✓ find_param_entry 缺 param → 报错
+[6] 截图 _media 旁路截断 + 视觉回喂
+  ✓ _media 抽到信封顶层、未被截断
+  ✓ data 不含图像（不进模型文本上下文）
+  ✓ vision=true → 截图作为 user 图片消息回喂
+  ✓ 工具文本结果不含图像 base64（省 token）
+  ✓ vision=false → 不追加图片消息
+[7] 历史消息 sanitize（UI 元数据不进上下文）
+  ✓ steps/未知字段被剥离，只留 role/content
+[8] 思考型模型 reasoning_content 回灌（v4-pro 多轮工具不再 400）
+  ✓ assistant(tool_calls) 消息回灌了 reasoning_content
+  ✓ 思考模型多轮收敛到最终答复
+
+脊梁自测：37 passed, 0 failed
+selftest-page-interaction.mjs exit=0
+page interaction: semantic, bounds, shadow, coordinates, frame routing and stale references passed
+selftest-thread-reservation.mjs exit=0
+OK   首次认领成功: got="T"
+OK   别窗口被拦: got=null
+OK   同 owner 立即重认领: got="T"
+OK   过期预留可被新窗口回收: got="T"
+OK   心跳第1次续约: got=true
+OK   心跳第2次续约: got=true
+OK   心跳第3次续约: got=true
+OK   心跳第4次续约: got=true
+OK   心跳第5次续约: got=true
+OK   心跳第6次续约: got=true
+OK   心跳第7次续约: got=true
+OK   心跳第8次续约: got=true
+OK   心跳第9次续约: got=true
+OK   心跳第10次续约: got=true
+OK   renew 不抢回已接管的预留: got=false
+OK   接管方 renew 正常: got=true
+OK   release 不放别窗口的预留: got=null
+OK   release 自己的预留后可被认领: got="T"
+OK   无 owner 认领: got="T"
+OK   无 owner 重认领(anon 同源): got="T"
+OK   无 owner 释放后认领: got="T"
+OK   多候选跳过被占取下一个: got="B"
+
+ALL PASS
+selftest-workspace.mjs exit=0
+[1] 未设根 → 报错 / info set:false
+  ✓ 未设工作目录 → _resolve 抛错
+  ✓ info(): set=false root=null
+[2] 设根 + 合法相对路径解析
+  ✓ getRoot=/ws/proj
+  ✓ 相对路径 a/b.js → /ws/proj/a/b.js
+  ✓ 空路径 → 根
+  ✓ '.' → 根
+  ✓ './sub/x' → 根内
+[3] 越界一律拒绝（安全关键）
+  ✓ ../etc 拒绝
+  ✓ a/../../b 拒绝（含 ..）
+  ✓ 绝对路径 /etc/passwd 越界拒绝
+  ✓ /ws/proj/../etc 拒绝（含 ..）
+[4] 绝对路径在根内 → 允许
+  ✓ 根内绝对路径放行
+  ✓ 等于根 → 放行
+  ✓ 前缀相近的 /ws/proj-evil 拒绝（非子目录）
+[5] runNode/runPython 在 Node 下因无 Subprocess 报错（不静默成功）
+  ✓ Node 环境 runNode 抛错（Subprocess 不可用）
+[6] Windows 路径/nvm PATH 兼容
+  ✓ Windows root D:/EasyJob → D:\EasyJob
+  ✓ Windows 相对反斜杠路径解析
+  ✓ Windows 正斜杠盘符绝对路径放行
+  ✓ Windows 盘符绝对路径越界拒绝
+  ✓ Windows PATH 变量先展开再 join
+  ✓ Windows 盘根 C:\ 不被清成 C:
+  ✓ 未展开的 %VAR% 不让 PathUtils.join 冒泡炸出
+  ✓ Windows PATH 使用分号拼接
+  ✓ Windows PATH 不混入 Unix 目录
+  ✓ Windows PATH 不按冒号拆坏盘符
+
+workspace selftest: 25 passed, 0 failed
+selftest-environment.mjs exit=0
+EnvironmentBackend selftest ok
+selftest-native-fingerprint.mjs exit=0
+Native fingerprint policy selftest passed: legacy preservation, display/GPU gating, real prefs, reset, fonts, audio seeds
+selftest-e2e.mjs exit=0
+构造结果: provider=deepseek model=deepseek-v4-flash endpoint=https://api.deepseek.com/v1/chat/completions
+DRY RUN OK：would POST https://api.deepseek.com/v1/chat/completions
