@@ -91,6 +91,8 @@ try {
   checks.push("coordinate click");
   check("coordinate click dispatched trusted event", (await call("eval", { expression: "document.querySelector('#go').dataset.trusted" })).value === "true");
   check("legacy selector click", (await call("click", { selector: "#go" })).ok);
+  check("scoped click cannot escape scope", /target_not_found/.test((await call("click", { selector: "#go", scope: "#shadow" })).error));
+  check("scoped type cannot escape scope", /target_not_found/.test((await call("type", { selector: "#account", scope: "#shadow", text: "wrong" })).error));
   check("legacy elements", (await call("elements", { limit: 2 })).count === 2);
   check("legacy eval", (await call("eval", { expression: "document.querySelector('#go').dataset.clicked" })).value === "yes");
   check("bounds", (await call("snapshot", { frameId: "all", limit: 1 })).truncated);

@@ -49,7 +49,7 @@ export class PageInteractionBackend {
     const { top, frames, truncated: treeTruncated } = this.tree(ctx);
     const selected = args.frameId === "all" ? frames.slice(0, 32) : [args.frameId && args.frameId !== "top" ? frames.find(frame => String(frame.id) === String(args.frameId)) : top];
     if (!selected[0]) throw new Error("frame_not_found: refresh page_frames");
-    const limit = Math.max(1, Math.min(120, Number(args.limit) || 40));
+    const limit = Math.max(1, Math.min(120, Math.floor(Number(args.limit) || 40)));
     const result = { ok: true, topFrameId: String(top.id), coordinateSpace: "frame-viewport-css", elements: [], frames: [], truncated: args.frameId === "all" && (treeTruncated || frames.length > 32) };
     const topDocument = String(top.currentWindowGlobal.innerWindowId);
     const deadline = Date.now() + 30000;
@@ -90,7 +90,7 @@ export class PageInteractionBackend {
     let frame;
     const request = { ...args, action };
     if (args.ref) {
-      if (["selector", "role", "name", "label", "x", "y"].some(key => args[key] !== undefined) || (action !== "type" && args.text !== undefined)) throw new Error("ambiguous_locator: use ref alone");
+      if (["selector", "role", "name", "label", "scope", "exact", "x", "y"].some(key => args[key] !== undefined) || (action !== "type" && args.text !== undefined)) throw new Error("ambiguous_locator: use ref alone");
       const ref = this.refs.get(args.ref);
       if (!ref || ref.topId !== String(top.id) || ref.topDocument !== String(top.currentWindowGlobal.innerWindowId)) throw new Error("stale_ref: reference belongs to another tab or document");
       frame = frames.find(frame => String(frame.id) === ref.frameId);

@@ -92,7 +92,7 @@ export class PageInteractionCore {
     const win = this.win;
     if (action === "click" && (args.x !== undefined || args.y !== undefined)) {
       if (!Number.isFinite(args.x) || !Number.isFinite(args.y) || args.x < 0 || args.y < 0 || args.x >= win.innerWidth || args.y >= win.innerHeight) throw new Error("invalid_coordinates: use viewport CSS pixels in the selected frame");
-      if (["id", "selector", "role", "name", "label", "text"].some(key => args[key] !== undefined)) throw new Error("ambiguous_locator: coordinates cannot be combined with an element locator");
+      if (["id", "selector", "role", "name", "label", "text", "scope", "exact"].some(key => args[key] !== undefined)) throw new Error("ambiguous_locator: coordinates cannot be combined with an element locator");
       const target = win.document.elementFromPoint(args.x, args.y);
       if (!target) throw new Error("target_not_found");
       if (target.matches("iframe,frame")) throw new Error("frame_target: choose that frameId before coordinate clicking");

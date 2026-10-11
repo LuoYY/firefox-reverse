@@ -668,7 +668,7 @@ export class PageBackend {
 
   /** 按 CSS 选择器或可见文字点击元素（自动滚动到可视区）。 */
   async click(args = {}, ctx) {
-    if (["ref", "frameId", "role", "name", "label", "x", "y"].some(key => args[key] !== undefined)) return this.interaction.act("click", args, ctx);
+    if (["ref", "frameId", "role", "name", "label", "scope", "exact", "x", "y"].some(key => args[key] !== undefined)) return this.interaction.act("click", args, ctx);
     const { selector, text } = args;
     if (!selector && !text) {
       throw new Error("click 需要 selector 或 text");
@@ -696,7 +696,7 @@ export class PageBackend {
 
   /** 给输入框/文本域填值并派发 input/change（可选回车提交）。 */
   async type(args = {}, ctx) {
-    if (["ref", "frameId", "role", "name", "label"].some(key => args[key] !== undefined)) return this.interaction.act("type", args, ctx);
+    if (["ref", "frameId", "role", "name", "label", "scope", "exact"].some(key => args[key] !== undefined)) return this.interaction.act("type", args, ctx);
     const { selector, text, submit } = args;
     if (!selector) {
       throw new Error("type 需要 selector");
