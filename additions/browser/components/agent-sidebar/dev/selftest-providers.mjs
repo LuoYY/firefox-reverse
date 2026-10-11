@@ -154,6 +154,7 @@ check("空 URL 提示", eEmpty, "请先填写 Base URL");
 const eScheme = await errOf(fetchModels("help.aliyun.com/zh"));
 check("缺协议头提示", /http/.test(eScheme), true);
 
-server.close();
+await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 console.log(fail ? `\n${fail} FAILED` : "\nALL PASS");
-process.exit(fail ? 1 : 0);
+// 让 fetch/HTTP 的异步句柄正常收尾，避免 Windows libuv 在强制退出时断言。
+process.exitCode = fail ? 1 : 0;
