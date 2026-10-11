@@ -377,6 +377,14 @@ export class ConfigStore {
     this.b.setString(PREF_PREFIX + "confirmTools", on ? "1" : "0");
   }
 
+  /** 同一浏览器 profile 的所有模型与会话共享，追加到内置 system 提示词。 */
+  getGlobalSystemPrompt() {
+    return this.b.getString(PREF_PREFIX + "globalSystemPrompt", "");
+  }
+  setGlobalSystemPrompt(value) {
+    this.b.setString(PREF_PREFIX + "globalSystemPrompt", String(value || ""));
+  }
+
   /** Provider-native prompt caching. "auto" enables only known-compatible request fields. */
   getPromptCacheMode(def = "auto") {
     const value = this.b.getString(PREF_PREFIX + "promptCache.mode", def);

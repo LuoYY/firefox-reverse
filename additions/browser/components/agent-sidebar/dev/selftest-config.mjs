@@ -54,6 +54,12 @@ check("默认使用持久化上下文投影", cs.getContextStrategy(), "projecte
 cs.setContextStrategy("legacy");
 check("上下文策略可一键回退旧模式", cs.getContextStrategy(), "legacy");
 
+check("默认全局 system 提示词为空", cs.getGlobalSystemPrompt(), "");
+const globalPrompt = "  用中文回复，保留 English 技术术语。\n\n保留多行格式。  ";
+cs.setGlobalSystemPrompt(globalPrompt);
+check("保存全局 system 提示词保留原文", cs.getGlobalSystemPrompt(), globalPrompt);
+check("重新创建 store 后读取同一持久化 backend", new ConfigStore(cs.b).getGlobalSystemPrompt(), globalPrompt);
+
 const migrated = cs.listModelProfiles();
 check("旧配置自动迁移成一条命名配置", migrated.length, 1);
 const accountA = cs.updateModelProfile(migrated[0].id, {
@@ -79,6 +85,9 @@ check("新建配置自动选中", cs.getActiveModelProfileId(), accountB.id);
 check("当前配置读取账号 B Key", cs.getApiKey("custom"), "sk-account-b");
 cs.setActiveModelProfileId(accountA.id);
 check("历史配置切回账号 A", cs.getApiKey("custom"), "sk-account-a");
+check("切换模型配置保留全局提示词", cs.getGlobalSystemPrompt(), globalPrompt);
+cs.setGlobalSystemPrompt("");
+check("清空全局 system 提示词", cs.getGlobalSystemPrompt(), "");
 const copy = cs.duplicateModelProfile(accountA.id);
 check("复制配置生成独立 id", copy.id === accountA.id, false);
 cs.deleteModelProfile(copy.id);

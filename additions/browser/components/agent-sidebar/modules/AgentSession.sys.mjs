@@ -448,6 +448,11 @@ export const agentSession = {
 
     let vision = false;
     try {
+      // 每次用户发起一轮时取最新设置；自动续跑沿用同一份 system，避免重复追加。
+      const globalSystemPrompt = configStore.getGlobalSystemPrompt().trim();
+      if (globalSystemPrompt) {
+        systemPrompt = (systemPrompt ? systemPrompt + "\n\n" : "") + globalSystemPrompt;
+      }
       // 取消边界只消费一次，且仅影响手动停止后的下一轮。正常回合和同一回合内的自动续跑完全不变。
       let hadCancellationBoundary = false;
       try {

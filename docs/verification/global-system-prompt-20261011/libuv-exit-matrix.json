@@ -1,0 +1,218 @@
+[
+  {
+    "node": "v23.9.0",
+    "variant": "original",
+    "trial": 1,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-original-1.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "original",
+    "trial": 2,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-original-2.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "original",
+    "trial": 3,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-original-3.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "original",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-original-1.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "original",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-original-2.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "original",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-original-3.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "await-close",
+    "trial": 1,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-await-close-1.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "await-close",
+    "trial": 2,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-await-close-2.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "await-close",
+    "trial": 3,
+    "exit_code": 3221226505,
+    "all_pass": true,
+    "uv_assertion": true,
+    "log": "v23.9.0-await-close-3.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "await-close",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-await-close-1.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "await-close",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-await-close-2.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "await-close",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-await-close-3.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "natural-exit",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-natural-exit-1.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "natural-exit",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-natural-exit-2.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "natural-exit",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-natural-exit-3.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "natural-exit",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-natural-exit-1.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "natural-exit",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-natural-exit-2.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "natural-exit",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-natural-exit-3.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "graceful",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-graceful-1.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "graceful",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-graceful-2.log"
+  },
+  {
+    "node": "v23.9.0",
+    "variant": "graceful",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v23.9.0-graceful-3.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "graceful",
+    "trial": 1,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-graceful-1.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "graceful",
+    "trial": 2,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-graceful-2.log"
+  },
+  {
+    "node": "v24.19.0",
+    "variant": "graceful",
+    "trial": 3,
+    "exit_code": 0,
+    "all_pass": true,
+    "uv_assertion": false,
+    "log": "v24.19.0-graceful-3.log"
+  }
+]

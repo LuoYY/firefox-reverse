@@ -1,0 +1,36 @@
+OK   normalize 去尾斜杠: got="https://a.com/v1"
+OK   normalize 剥 chat/completions: got="https://a.com/compatible-mode/v1"
+OK   normalize 剥 messages: got="https://a.com/v1"
+OK   normalize 剥 models: got="https://a.com/v1"
+OK   chatPath 无版本段: got="/v1/chat/completions"
+OK   chatPath 带 /v1: got="/chat/completions"
+OK   chatPath 带 /v4: got="/chat/completions"
+OK   chatPath anthropic 带 /v1: got="/messages"
+OK   chatPath anthropic 无版本段: got="/v1/messages"
+OK   chatPath gemini 兼容根 /v1beta/openai: got="/chat/completions"
+OK   chatPath /v1beta 结尾: got="/chat/completions"
+OK   chatPath host 含 v1 不误判: got="/v1/chat/completions"
+OK   custom chat URL 不翻倍: got="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+OK   custom reasoning 默认不发字段: got=undefined
+OK   custom reasoning 默认保留 temperature: got=0.7
+OK   custom reasoning high 写入请求: got="high"
+OK   显式 reasoning 不发 temperature: got=undefined
+OK   reasoning override 优先: got="xhigh"
+OK   Anthropic 不误发 OpenAI reasoning_effort: got=undefined
+OK   命名配置 B 读取独立 Key: got="<synthetic-key-b>"
+OK   命名配置 B 读取独立端点: got="https://second.example.com/v1/chat/completions"
+OK   命名配置 B 读取独立模型: got="model-b"
+OK   切回命名配置 A: got=["<synthetic-key-a>","model-a"]
+OK   无版本段 → /v1/models: got=["m-alpha","m-beta"]
+OK   带版本段 → {base}/models: got=["m-alpha","m-beta"]
+OK   误贴完整 chat 端点也能拉: got=["m-alpha","m-beta"]
+OK   带 key 通过鉴权: got=["m-alpha","m-beta"]
+OK   gemini 兼容根 → 首选 {base}/models: got=["m-alpha","m-beta"]
+OK   Anthropic 风格 x-api-key 鉴权: got=["m-alpha","m-beta"]
+OK   401 → 报 Key 问题: got=true
+OK   文档页 → 列出全部尝试: got=true
+OK   文档页 → 提示疑似网页: got=true
+OK   空 URL 提示: got="请先填写 Base URL"
+OK   缺协议头提示: got=true
+
+ALL PASS

@@ -23,6 +23,7 @@ SELFTESTS=(
   selftest-markdown.mjs
   selftest-addons.mjs
   selftest-config.mjs
+  selftest-global-system-prompt.mjs
   selftest-typography.mjs
   selftest-mozbuild.mjs
   selftest-providers.mjs

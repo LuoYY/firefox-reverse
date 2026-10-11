@@ -1660,7 +1660,8 @@ body {
 
 .settings-pane__field select,
 .settings-pane__field input[type="text"],
-.settings-pane__field input[type="password"] {
+.settings-pane__field input[type="password"],
+.settings-pane__field textarea {
   font: inherit;
   font-weight: normal;
   font-size: calc(13px * var(--frx-font-scale, 1));
@@ -1676,10 +1677,17 @@ body {
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 .settings-pane__field select:focus,
-.settings-pane__field input:focus {
+.settings-pane__field input:focus,
+.settings-pane__field textarea:focus {
   outline: none;
   border-color: var(--in-content-primary-button-background, Highlight);
   box-shadow: 0 0 0 2px color-mix(in srgb, Highlight 22%, transparent);
+}
+
+.settings-pane__field textarea {
+  resize: vertical;
+  min-height: 8em;
+  line-height: 1.5;
 }
 
 .settings-pane__modelrow {
