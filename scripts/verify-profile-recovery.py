@@ -50,6 +50,8 @@ def probe(binary, mode, recovery_supported):
             missing.parent.mkdir(parents=True)
             missing.write_text("do-not-replace")
         elif mode == "explicit":
+            missing.mkdir(parents=True)
+            (missing / "fixture-marker").write_text("preserve-existing-profile")
             command += ["-profile", str(missing)]
         elif mode == "environment":
             env.update(XRE_PROFILE_PATH=str(missing), XRE_PROFILE_LOCAL_PATH=str(missing))
@@ -75,14 +77,13 @@ def probe(binary, mode, recovery_supported):
                 text = log.read()
             recovery = "opening Profile Manager for user choice." in text
             expected = recovery_supported and mode in ("default", "not-directory")
-            # Stock Firefox creates a directory explicitly requested with
-            # -profile. Recovery must preserve that behavior, not redefine it.
-            untouched = missing.read_text() == "do-not-replace" if mode == "not-directory" else missing.is_dir() if mode == "explicit" else not missing.exists()
+            # Existing explicit profiles must bypass recovery without a reset.
+            untouched = missing.read_text() == "do-not-replace" if mode == "not-directory" else (missing / "fixture-marker").read_text() == "preserve-existing-profile" if mode == "explicit" else not missing.exists()
             assert recovery == expected, f"{mode}: recovery={recovery}, expected={expected}; {text[-2000:]}"
             assert untouched, f"{mode}: profile handling changed unexpectedly"
             assert running or mode == "headless", f"{mode}: unexpected early exit; {text[-2000:]}"
             assert "Error: App:" not in text and "Couldn't load XPCOM" not in text, "invalid fixture application"
-            return {"mode": mode, "recoveryOffered": recovery, "profileHandlingMatchesExpected": untouched, "profileDirectoryCreated": missing.is_dir(), "runningBeforeStop": running, "exitCode": process.returncode, "windows": windows, "logTail": text[-2000:].replace(str(root), "$FIXTURE")}
+            return {"mode": mode, "recoveryOffered": recovery, "profileHandlingMatchesExpected": untouched, "profileDirectoryExists": missing.is_dir(), "runningBeforeStop": running, "exitCode": process.returncode, "windows": windows, "logTail": text[-2000:].replace(str(root), "$FIXTURE")}
         finally:
             shutil.rmtree(registry)
             if cache.exists():
