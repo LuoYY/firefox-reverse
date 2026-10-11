@@ -15,6 +15,7 @@ case "$arch" in
 esac
 
 test -f "$package"
+python3 "$(cd "$(dirname "$0")" && pwd)/verify-branding.py" --package "$package"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 tar -xJf "$package" -C "$tmp"

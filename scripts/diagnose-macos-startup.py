@@ -10,6 +10,18 @@ import platform
 import subprocess
 
 
+def path_state(target):
+    return {"directoryExists": target.is_dir(), "readable": os.access(target, os.R_OK), "writable": os.access(target, os.W_OK), "parentDirectoryExists": target.parent.is_dir()}
+
+
+def startup_environment(environment):
+    # Only record presence; inherited paths/tokens may contain private data.
+    return {key: bool(environment.get(key)) for key in (
+        "XRE_PROFILE_PATH", "XRE_PROFILE_LOCAL_PATH", "XRE_PROFILE_NAME",
+        "MOZ_NEW_INSTANCE", "MOZ_FRX_ENV_ID", "MOZ_FRX_FINGERPRINT_CONFIG",
+    )}
+
+
 def profile_registry(root):
     root = Path(root)
     report = {"registryExists": (root / "profiles.ini").is_file(), "profiles": [], "installs": []}
@@ -28,11 +40,12 @@ def profile_registry(root):
             if filename == "profiles.ini" and section.startswith("Profile"):
                 value = item.get("Path", "")
                 target = root / value if item.get("IsRelative", "1") == "1" else Path(value)
-                report["profiles"].append({"entry": section, "default": item.get("Default") == "1", "pathPresent": bool(value), "directoryExists": bool(value) and target.is_dir(), "readable": bool(value) and os.access(target, os.R_OK), "writable": bool(value) and os.access(target, os.W_OK)})
+                state = path_state(target) if value else {key: False for key in ("directoryExists", "readable", "writable", "parentDirectoryExists")}
+                report["profiles"].append({"entry": section, "default": item.get("Default") == "1", "pathPresent": bool(value), **state})
             elif item.get("Default"):
                 target = root / item["Default"]
                 # Install hashes and personal paths are deliberately omitted.
-                report["installs"].append({"source": filename, "directoryExists": target.is_dir()})
+                report["installs"].append({"source": filename, **path_state(target)})
     return report
 
 
@@ -46,7 +59,7 @@ def command(args):
 
 def diagnose(app, registry):
     app = Path(app)
-    report = {"system": platform.system(), "systemVersion": platform.mac_ver()[0], "architecture": platform.machine(), "appExists": app.is_dir(), "checks": [], "profileRegistry": profile_registry(registry)}
+    report = {"system": platform.system(), "systemVersion": platform.mac_ver()[0], "architecture": platform.machine(), "appExists": app.is_dir(), "checks": [], "profileRegistry": profile_registry(registry), "shellEnvironmentPresence": startup_environment(os.environ)}
     try:
         with (app / "Contents/Info.plist").open("rb") as stream:
             info = plistlib.load(stream)
@@ -59,12 +72,15 @@ def diagnose(app, registry):
     registry_report = report["profileRegistry"]
     if any(not entry["directoryExists"] for entry in registry_report["installs"]):
         report["checks"].append("installation-default-points-to-missing-profile-directory")
+    if any(entry["directoryExists"] and not entry["writable"] for entry in registry_report["installs"]):
+        report["checks"].append("installation-default-profile-not-writable")
     if any(not entry["directoryExists"] or not entry["writable"] for entry in registry_report["profiles"] if entry["default"]):
         report["checks"].append("default-profile-directory-missing-or-not-writable")
     if platform.system() == "Darwin" and app.is_dir():
         report["signature"] = command(["/usr/bin/codesign", "--verify", "--deep", "--strict", str(app)])
         report["quarantine"] = command(["/usr/bin/xattr", "-p", "com.apple.quarantine", str(app)])
-    report["note"] = "Missing Firefox profile means a user-data directory, not fingerprint.json. This report is read-only and cannot establish macOS 27 compatibility. Review before sharing."
+    report["note"] = "Missing Firefox profile means a user-data directory, not fingerprint.json. This report is read-only and cannot establish macOS 27 compatibility. Shell environment is not necessarily Finder's environment. Review before sharing."
+    report["startupFlags"] = "The pinned Firefox 153 source ignores -no-remote. Use -new-instance for an intentional separate instance; it does not bypass profile locking or repair missing data. Do not delete locks or profile registries as a workaround."
     return report
 
 

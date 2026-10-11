@@ -112,13 +112,15 @@ jobs:
             export MOZCONFIG="${{ matrix.mozconfig }}"
           fi
           export MOZ_BUILD_DATE="$(date -u +%Y%m%d%H%M%S)"
-          ./mach configure
+          ./mach configure --with-branding=browser/branding/unofficial
+          python3 "$GITHUB_WORKSPACE/scripts/verify-branding.py" --objdir "$UPSTREAM/${{ matrix.objdir }}"
           "$GITHUB_WORKSPACE/scripts/force-build-id-relink.sh" "$UPSTREAM/${{ matrix.objdir }}"
           ./mach build
           grep -F "BuildID=$MOZ_BUILD_DATE" "${{ matrix.objdir }}/dist/bin/application.ini"
           grep -F "SourceStamp=$MOZ_SOURCE_CHANGESET" "${{ matrix.objdir }}/dist/bin/application.ini"
-          "$GITHUB_WORKSPACE/scripts/macos-adhoc-sign-apps.sh" "$UPSTREAM"
+          "$GITHUB_WORKSPACE/scripts/macos-adhoc-sign-apps.sh" "$UPSTREAM" "$UPSTREAM/${{ matrix.objdir }}"
           ./mach package
+          python3 "$GITHUB_WORKSPACE/scripts/verify-branding.py" --package "$UPSTREAM/${{ matrix.objdir }}/dist/firefox"
 
       - name: 校验目标架构并整理 DMG
         id: dmg
@@ -195,8 +197,12 @@ jobs:
         working-directory: upstream
         run: |
           ./mach --no-interactive bootstrap --application-choice browser
+          ./mach configure --with-branding=browser/branding/unofficial
+          objdir=$(./mach environment --format json | python -c 'import json,sys; print(json.load(sys.stdin)["topobjdir"])')
+          python "$GITHUB_WORKSPACE/firefox-reverse/scripts/verify-branding.py" --objdir "$objdir"
           ./mach build
           ./mach package
+          python "$GITHUB_WORKSPACE/firefox-reverse/scripts/verify-branding.py" --package "$objdir/dist/firefox"
       - name: 收集 + 上传
         shell: bash
         run: |

@@ -470,7 +470,7 @@ try {
   assert.equal(opened.environment.runtime.status, "running");
   assert.equal(opened.environment.runtime.marionetteStatus, "ready");
   assert.equal(opened.environment.runtime.pid, 7331);
-  assert.deepEqual(opened.originalArgs.slice(0, 4), ["-marionette", "-remote-allow-system-access", "-no-remote", "-profile"]);
+  assert.deepEqual(opened.originalArgs.slice(0, 5), ["-marionette", "-remote-allow-system-access", "-no-remote", "-new-instance", "-profile"]);
   assert.equal(opened.originalArgs.includes("--marionette-port"), false);
   assert.equal(opened.launchEnvironment.MOZ_MARIONETTE, "1");
   assert.deepEqual(JSON.parse(opened.launchEnvironment.MOZ_MARIONETTE_PREF_STATE_ACROSS_RESTARTS), {

@@ -2244,6 +2244,7 @@ export class EnvironmentBackend {
       "-marionette",
       "-remote-allow-system-access",
       "-no-remote",
+      "-new-instance",
       "-profile",
       env.profilePath,
     ];

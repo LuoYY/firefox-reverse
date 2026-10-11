@@ -9,6 +9,8 @@
 
 // 注意：JSWindowActor 要求子类名 = <ActorName>Child。我们的子类是 AgentEvalChild，
 // 故 ACTOR_NAME 必须是 "AgentEval"（否则 "Could not find actor constructor"）。
+import { PageInteractionBackend } from "./PageInteractionBackend.sys.mjs";
+
 const ACTOR_NAME = "AgentEval";
 let _registered = false;
 
@@ -299,6 +301,14 @@ function activeBrowser(ctx) {
 }
 
 export class PageBackend {
+  get interaction() {
+    return this._interaction ||= new PageInteractionBackend(this._q.bind(this), activeBrowser);
+  }
+
+  frames(args, ctx) { return this.interaction.frames(args, ctx); }
+  snapshot(args, ctx) { return this.interaction.scan("snapshot", args, ctx); }
+  find(args, ctx) { return this.interaction.scan("find", args, ctx); }
+
   /** 在当前标签页内容上下文执行表达式。
    *  默认返回 { ok, value, type, totalLength, returnedLength }（带完整性元信息，治"被截了却不自知"）；
    *  传 saveTo 则把**完整字符串结果**落盘到工作目录该相对路径、只回 { ok, saved, savedPath, length, preview }
@@ -657,7 +667,9 @@ export class PageBackend {
   }
 
   /** 按 CSS 选择器或可见文字点击元素（自动滚动到可视区）。 */
-  async click({ selector, text } = {}, ctx) {
+  async click(args = {}, ctx) {
+    if (["ref", "frameId", "role", "name", "label", "x", "y"].some(key => args[key] !== undefined)) return this.interaction.act("click", args, ctx);
+    const { selector, text } = args;
     if (!selector && !text) {
       throw new Error("click 需要 selector 或 text");
     }
@@ -683,7 +695,9 @@ export class PageBackend {
   }
 
   /** 给输入框/文本域填值并派发 input/change（可选回车提交）。 */
-  async type({ selector, text, submit } = {}, ctx) {
+  async type(args = {}, ctx) {
+    if (["ref", "frameId", "role", "name", "label"].some(key => args[key] !== undefined)) return this.interaction.act("type", args, ctx);
+    const { selector, text, submit } = args;
     if (!selector) {
       throw new Error("type 需要 selector");
     }
@@ -702,7 +716,9 @@ export class PageBackend {
   }
 
   /** 滚动：到底/到顶/滚到某元素/增量。 */
-  async scroll({ dx, dy, toBottom, toTop, selector } = {}, ctx) {
+  async scroll(args = {}, ctx) {
+    if (args.ref !== undefined || args.frameId !== undefined) return this.interaction.act("scroll", args, ctx);
+    const { dx, dy, toBottom, toTop, selector } = args;
     const sel = JSON.stringify(selector || "");
     const dyExpr = dy === undefined ? "Math.round(window.innerHeight*0.8)" : String(Number(dy) || 0);
     return this._pageOp(`(function(){
@@ -774,6 +790,9 @@ export class PageBackend {
       ok: true,
       width: canvas.width,
       height: canvas.height,
+      coordinateSpace: fullPage ? "top-document-css" : "top-viewport-css",
+      viewport: { width: d.w, height: d.h, scrollX: d.sx, scrollY: d.sy },
+      imageScale: { x: canvas.width / d.w, y: canvas.height / rectH },
       note: `已截图 ${canvas.width}x${canvas.height}（${fullPage ? "整页" : "可视区"}）`,
       _media: [{ type: "image", mime: "image/png", dataUrl }],
     };

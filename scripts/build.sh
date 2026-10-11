@@ -21,6 +21,9 @@ if [[ ! -f .bootstrap-done ]]; then
   touch .bootstrap-done
 fi
 
+./mach configure --with-branding=browser/branding/unofficial
+objdir=$(./mach environment --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["topobjdir"])')
+python3 "$REPO_ROOT/scripts/verify-branding.py" --objdir "$objdir"
 ./mach build "$@"
 
 echo "[build] done. 产物位于 $UPSTREAM_DIR/obj-*/dist/"

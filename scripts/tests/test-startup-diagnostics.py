@@ -18,4 +18,10 @@ with tempfile.TemporaryDirectory() as directory:
     assert "private-name" not in str(report) and "PRIVATEHASH" not in str(report)
     assert hashlib.sha256((root / "profiles.ini").read_bytes()).hexdigest() == before
     assert not diagnostics.profile_registry(root / "absent")["registryExists"]
+    environment = diagnostics.startup_environment({"XRE_PROFILE_PATH": "/private/location", "MOZ_FRX_FINGERPRINT_CONFIG": "secret"})
+    assert environment["XRE_PROFILE_PATH"] and not environment["MOZ_NEW_INSTANCE"]
+    assert "private/location" not in str(environment) and "secret" not in str(environment)
+    (root / "profiles.ini").write_text("[Profile0]\nPath=\nDefault=1\n", encoding="utf-8")
+    empty = diagnostics.profile_registry(root)["profiles"][0]
+    assert not empty["directoryExists"] and not empty["writable"]
 print("Startup diagnostics: stale install mapping, Unicode profile, privacy and read-only checks passed")

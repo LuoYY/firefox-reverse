@@ -14,7 +14,9 @@ if [[ ! -x "$upstream/mach" ]]; then
   exit 1
 fi
 
+upstream=$(cd "$upstream" && pwd)
 cd "$upstream"
+node "$repo_root/scripts/check-branding-assets.mjs" "$upstream"
 # Keep an already checked-out l10n repository pinned by default. Set
 # FRX_L10N_UPDATE=1 explicitly when a release should pull newer translations.
 if [[ ${FRX_L10N_UPDATE:-0} != 1 ]]; then
@@ -32,11 +34,13 @@ export RUN_FIND_DUPES=
 export RUN_MOZHARNESS_ZIP=
 
 objdir=$(./mach environment --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["topobjdir"])')
+python3 "$repo_root/scripts/verify-branding.py" --objdir "$objdir"
 
 # package-multi-locale builds locale resources into the current object tree and
 # packages the locally compiled binaries. Unlike installers-<locale>, it never
 # substitutes a Mozilla Taskcluster browser artifact for Firefox Reverse.
 ./mach package-multi-locale --locales "$locale"
+python3 "$repo_root/scripts/verify-branding.py" --package "$objdir/dist/firefox"
 "$repo_root/scripts/verify-zh-cn-stage.sh" "$objdir/dist/firefox" "$locale"
 
 echo "localized packages:"

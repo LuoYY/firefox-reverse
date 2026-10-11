@@ -38,6 +38,7 @@ SELFTESTS=(
   selftest-retry.mjs
   selftest-anthropic.mjs
   selftest-toolrouter.mjs
+  selftest-page-interaction.mjs
   selftest-thread-reservation.mjs
   selftest-workspace.mjs
   selftest-environment.mjs
@@ -50,6 +51,8 @@ for test_file in "${SELFTESTS[@]}"; do
 done
 
 run node "$REPO_ROOT/scripts/check-branding-assets.mjs"
+run python3 "$REPO_ROOT/scripts/tests/test-branding.py"
+run python3 "$REPO_ROOT/scripts/tests/test-startup-diagnostics.py"
 
 echo
 echo "agent tool selftests: all passed"
