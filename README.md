@@ -316,6 +316,7 @@ cd upstream && ./mach build && ./mach package
 - **启动兼容（Issue #18 排查支持）**：独立环境补充有效的 `-new-instance`；默认 profile 确认丢失时提供原生管理器供用户选择，不自动迁移、重置或解锁。增加只读环境/安装默认项诊断。报告者 macOS 27 根因仍未确认，不把相关日志或启动参数当作完整修复证明。
 - **品牌构建校验**：显式选择 Firefox Reverse 品牌目录，校验构建配置与最终包内名称、首页/关于页图标、字标、语言品牌名及 macOS 图标；发现 Nightly 回退时阻止发布。只收集当前对象目录产物，详见[品牌构建说明](patches/branding/README.md)。
 - **配套 MCP v0.4.0**：启动分组 `all/direct/delegate`，默认 23 个入口不变；工具目录支持按需过滤，不强制 Agent 工作流。
+- **候选验收范围**：macOS 26.7.1 ARM64 通过 213 项指纹、33 项页面/Agent、5 类启动边界检查；Linux x86_64 对应 182/33/5，GPU/MSAA 和 Arial/Times 缺失用例未验证。Intel 包在 Apple Silicon Rosetta 下通过 213/33，不能等同 Intel 实机。Windows/Linux ARM64 已构建并通过包身份检查，原生 CI 尚未完成，因此本候选尚未正式发布。
 
 ### v0.25.0（2026-09-17）
 - **侧栏文字大小（Issue #17）**：设置中新增 90%–180% 字号比例及默认复位，覆盖聊天、Markdown、设置和环境编辑；按 profile 持久化，不修改网页缩放或指纹 DPR。
