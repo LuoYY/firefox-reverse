@@ -62,6 +62,13 @@ class FinalPackageTests(unittest.TestCase):
         self.assertEqual(report["resource_sha256"][self.bundle], self.bundle_sha)
         self.assertEqual(report["source_commit"], COMMIT)
 
+    def test_large_file_hash_works_without_python311_file_digest(self):
+        data = b"multi-chunk\0" * 120000
+        filename = Path(self.temp.name) / "hash-fixture.bin"
+        filename.write_bytes(data)
+        with patch.object(hashlib, "file_digest", None, create=True):
+            self.assertEqual(verifier.native.sha(filename), hashlib.sha256(data).hexdigest())
+
     def test_stale_resources_fail_individually_without_rewriting(self):
         for entry in verifier.SOURCE_RESOURCES:
             with self.subTest(entry=entry):
