@@ -6,7 +6,7 @@
 
 | 日期 | 版本号 | 改版内容（一句话） |
 |------|--------|--------------------|
-| 2026-10-12 | v0.26.1 准备中 | 合入 @awaxiaoyu 的 PR #21：profile 级全局附加 system 提示词，默认空值兼容、下一轮生效、自动续跑不重复追加。发布门禁增加固定源码 UI 重建对比、AgentSession 资源校验及未修改最终包的真实侧栏请求回归；最终多平台构建与验收未完成，尚未发布。 |
+| 2026-10-12 | v0.26.1 | 合入 @awaxiaoyu 的 PR #21：profile 级全局附加 system 提示词，默认空值兼容、下一轮生效、自动续跑不重复追加。五目标六包完成构建，固定源码与最终包资源核对通过；每个平台均通过 8 类场景/11 条合成模型请求、33 项页面/Agent 检查，Mac ARM64/Intel、Windows、Linux x86_64/ARM64 指纹回归分别通过 213/197/212/182/182 项。[原生 CI](https://github.com/WhiteNightShadow/firefox-reverse/actions/runs/38208742667) 全部通过，Mac 另通过启动边界与隔离升级检查；附件仅发布安装/便携包。 |
 | 2026-10-11 | v0.26.0 正式验收 | 五目标六包统一 SourceStamp/BuildID；Mac ARM64/Intel、Windows x86_64、Linux x86_64/ARM64 原生指纹检查分别通过 213/197/212/182/182 项，各通过 33 项页面/Agent 检查；Mac ARM64/Linux x86_64 各通过 5 类启动边界，Windows 另通过 6 次截图/退出及 Ledger 回归。通过[原生 CI](https://github.com/WhiteNightShadow/firefox-reverse/actions/runs/38126954615)，附件仅发布安装/便携包。Intel/Linux 无头 GPU 与 Linux 缺失字体不在验证范围内；本地覆盖安装后指纹 213 项及页面/Agent 33 项复验通过。 |
 | 2026-10-11 | v0.26.0 | **最小兼容迭代**：新增语义元素查找、精简快照、短引用、跨域嵌套 iframe 与坐标点击（#15）；保留旧页面工具。独立环境改用有效的 `-new-instance`，默认 profile 丢失时提供人工选择入口并加强只读诊断（#18 尚未确认 macOS 27 根因）。纳入品牌构建门禁，配套 MCP v0.4.0 启动工具分组及按需目录（MCP #3）。 |
 | 2026-09-28 | 待发布 | **品牌构建链路加固**：显式 branding 配置，校验实际 config.status 和包内首页/关于页图标、字标、各语言品牌名及 macOS Bundle 图标；打包只收集当前对象目录。19 项故障注入/入口回归及 Agent 自测通过；未重编内核、未发布新包，不改 Agent/指纹/profile 行为。 |

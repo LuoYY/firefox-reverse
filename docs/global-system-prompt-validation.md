@@ -2,7 +2,7 @@
 
 ## 最终安装包验收入口
 
-v0.26.1 发布准备新增跨平台 `--app` 模式，直接测试从候选安装包解压的应用，不覆盖 `omni.ja` 或其他资源。先通过 `prepare-native-candidate.py` 核对下载包 SHA256、架构、品牌、BuildID、SourceStamp 及模块字节，并将固定 `source_commit` 经 lockfile 重新构建的 sidebar bundle 与包内资源核对，再运行：
+v0.26.1 新增跨平台 `--app` 模式，直接测试从安装包解压的应用，不覆盖 `omni.ja` 或其他资源。先通过 `prepare-native-candidate.py` 核对下载包 SHA256、架构、品牌、BuildID、SourceStamp 及模块字节，并将固定 `source_commit` 经 lockfile 重新构建的 sidebar bundle 与包内资源核对，再运行：
 
 ```sh
 python3 scripts/verify-global-system-prompt.py \
@@ -15,7 +15,32 @@ python3 scripts/verify-global-system-prompt.py \
 
 `--app` 接受 macOS `.app` 目录或 Windows/Linux 可执行文件。运行前后核对 AgentSession、ConfigStore、CSS、bundle 和 XUL；校验不符直接失败，不把仓库文件覆盖进去“修复”候选包。独立临时 profile 只使用合成配置和本机模型服务；验收包含原文保存、完整重启、模型/会话切换、历史会话、运行中修改的回合边界、真实自动续跑与清空恢复。现有指纹、页面/Agent、Windows 启动与 Ledger 回归继续保留。
 
-此入口的加入不代表各平台已经通过；完成最终包运行后才更新发布验收结果。下文为作者 PR 阶段的历史资源覆盖测试，不是 v0.26.1 安装包报告。
+## v0.26.1 最终包结果
+
+2026-10-12 完成五目标六包构建与原生验收。运行时代码提交为 `906578f07e22f94151edf793279203302ba484a7`，BuildID 为 `20261012042610`；[原生 CI 38208742667](https://github.com/WhiteNightShadow/firefox-reverse/actions/runs/38208742667) 全部通过，各平台原始报告可在该 run 的 artifacts 中查看。Mac ARM64 在本地 macOS 26.7.1 验证；Intel Mac 使用 `macos-15-intel` 原生 runner，本地 Rosetta 结果仅作补充。
+
+| 平台 | 指纹检查 | 页面/Agent 检查 | 提示词场景 / 请求 |
+| --- | ---: | ---: | ---: |
+| macOS ARM64 | 213 | 33 | 8 / 11 |
+| macOS Intel | 197 | 33 | 8 / 11 |
+| Windows x86_64 | 212 | 33 | 8 / 11 |
+| Linux x86_64 | 182 | 33 | 8 / 11 |
+| Linux ARM64 | 182 | 33 | 8 / 11 |
+
+每个平台均确认最终包资源未在测试前后被替换，两次正常浏览器退出码均为 0；保存、重启、切换模型/会话、运行中修改、自动续跑及清空恢复全部通过。源码与所有包内的关键资源 SHA256 一致：
+
+| 资源 | SHA256 |
+| --- | --- |
+| AgentSession | `d189af050255e5c42b61b7150122c52ff718fed19faf1d1c8637a22c9da9b7a7` |
+| ConfigStore | `308417d1ab506881f7792273232caec90c90aad0a5a7dff57b0ecfea4f781c9f` |
+| CSS | `e4c9955f8c1295d148182ff98ca5168a02e8fc2e2ada3756a92881ab895318e1` |
+| Sidebar bundle | `5a623a827fbef18f7238666738ebbcdf684015d8f2d583ffea29341ebe711e62` |
+
+Mac 另通过 5 类隔离 profile 启动边界、7 项 v0.26.0 到 v0.26.1 升级检查，覆盖旧模型配置、会话、书签、cookie/localStorage 保留、默认无附加提示词及另一 profile 的存储隔离。Windows 另通过 6 次截图/正常退出及 Ledger 回归；安装程序中的核心载荷与已实测 ZIP 一致，但未把静态载荷比较当作安装向导实测。
+
+边界：使用本地合成模型服务，不是付费供应商线上联调；Intel/Linux 无头 runner 的 GPU/MSAA 未验证，Linux 缺失 Arial/Times 字体用例未验证；macOS 27 报告者的启动根因仍未确认。macOS 包为 ad-hoc 签名，非 Apple Developer ID 公证。Release 只附安装/便携包，不附测试日志或 JSON。
+
+下文为作者 PR 阶段的历史资源覆盖测试，不是 v0.26.1 最终包报告；最终包以本节固定源码、资源哈希和 CI 结果为准。
 
 ## PR 阶段历史验收
 

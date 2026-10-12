@@ -312,9 +312,11 @@ cd upstream && ./mach build && ./mach package
 
 ## 📝 版本更新记录
 
-### v0.26.1（准备中，2026-10-12）
+### v0.26.1（正式版，2026-10-12）
 - **全局附加 system 提示词（PR #21）**：感谢 [@awaxiaoyu](https://github.com/awaxiaoyu) 的贡献。侧栏设置可保存多行提示词，同一 profile 的模型配置和会话共享；追加到内置 system 后，从下一轮用户对话生效，当前任务与自动续跑保持原快照，避免重复追加。默认留空或清空后沿用内置提示词，不迁移旧用户配置。
-- **最终包验收**：增加未修改安装包的资源与源码逐字节核对，以及保存、重启持久化、切换模型/会话、运行中修改、自动续跑和清空恢复的真实侧栏测试。PR 的资源覆盖验收仍保留为历史证据，不能替代最终发布包验证；构建、原生验收与发布状态以 Release 为准。
+- **最终包验收**：五个平台均通过 8 类提示词场景、11 条本地合成模型请求，包内资源前后未修改且与固定源码一致。原有指纹检查按 Mac ARM64/Intel、Windows x86_64、Linux x86_64/ARM64 分别通过 213/197/212/182/182 项，各另通过 33 项页面/Agent 检查。[原生 CI 与报告](https://github.com/WhiteNightShadow/firefox-reverse/actions/runs/38208742667)。
+- **升级与范围**：Mac 完成 5 类启动边界和 7 项隔离升级检查，保留旧会话、模型配置、书签、cookie/localStorage；Windows 完成 6 次截图/退出与 Ledger 回归。新提示词仅作用于浏览器内 Agent，不改网页、指纹或外部 CLI 自身的 system。无头 Intel/Linux 的 GPU/MSAA、Linux 缺失字体及真实付费模型不在本次验证范围内，详见[验收说明](docs/global-system-prompt-validation.md)。
+- **安装包**：[v0.26.1 Release](https://github.com/WhiteNightShadow/firefox-reverse/releases/tag/v0.26.1) 仅提供五目标六个安装/便携包；升级前完整退出旧应用，保留现有 profile 与指纹环境目录。
 
 ### v0.26.0（正式版，2026-10-11）
 - **页面定位（Issue #15）**：新增 `page_frames/page_snapshot/page_find`，支持 role/name/label、open shadow root 和跨域嵌套 iframe；`page_click/type/scroll` 可使用短引用，跳转后旧引用失效。坐标点击使用选定 frame 的 viewport CSS 像素，截图返回坐标系与缩放信息。旧 selector/text 调用保持兼容，工具总数 71。见[页面定位](docs/page-interaction.md)。
