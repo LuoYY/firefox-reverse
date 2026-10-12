@@ -1,17 +1,21 @@
-"""Verify sidebar prompt settings in a real Firefox, using synthetic localhost responses.
+"""Verify sidebar settings using synthetic localhost responses and an owned profile.
 
-Build the sidebar first, then pass an official Windows ZIP. Only an extracted
-copy and a newly created profile are changed. No user profile or credentials
-are read. The four PR resources are overlaid without rebuilding Gecko.
+--app validates an extracted final package without changing its resources.
+--package retains the Windows resource-overlay fixture used during PR review;
+that mode is not final-package acceptance.
 """
 import argparse
 import base64
+import configparser
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import json
 import os
 from pathlib import Path
+import platform
+import re
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -26,6 +30,47 @@ native = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(native)
 PROMPT_A = "  NATIVE_POLICY_A\n中文回复，保留 English 技术术语。  "
 PROMPT_B = "NATIVE_POLICY_B\nNext user turn only."
+UI_PREFIX = "chrome/browser/content/browser/agent-sidebar/"
+SOURCE_RESOURCES = {
+    "modules/agentsidebar/AgentSession.sys.mjs": "modules/AgentSession.sys.mjs",
+    "modules/agentsidebar/ConfigStore.sys.mjs": "modules/ConfigStore.sys.mjs",
+    UI_PREFIX + "agent-panel.css": "content/agent-panel.css",
+}
+
+
+def application_paths(app):
+    app = app.resolve()
+    if app.suffix == ".app" and app.is_dir():
+        return app / "Contents/MacOS/firefox", app / "Contents/Resources", app / "Contents/MacOS/XUL"
+    executable = app if app.is_file() else app / ("firefox.exe" if os.name == "nt" else "firefox")
+    root = executable.parent
+    return executable, root, root / ("xul.dll" if executable.suffix == ".exe" else "libxul.so")
+
+
+def verify_final_resources(app, source_commit, build_id, bundle_sha256):
+    assert re.fullmatch(r"[0-9a-f]{40}", source_commit), "Expected full source commit"
+    assert re.fullmatch(r"[0-9]{14}", build_id), "Expected BuildID"
+    assert re.fullmatch(r"[0-9a-f]{64}", bundle_sha256), "Expected rebuilt sidebar SHA256"
+    executable, root, xul = application_paths(app)
+    assert executable.is_file() and xul.is_file(), "Incomplete application"
+    ini = configparser.ConfigParser(interpolation=None)
+    ini.read(root / "application.ini", encoding="utf-8")
+    assert ini["App"]["SourceStamp"] == source_commit, "SourceStamp mismatch"
+    assert ini["App"]["BuildID"] == build_id, "BuildID mismatch"
+    hashes = {}
+    with zipfile.ZipFile(root / "browser/omni.ja") as archive:
+        for entry, relative in SOURCE_RESOURCES.items():
+            expected = subprocess.check_output([
+                "git", "show", f"{source_commit}:additions/browser/components/agent-sidebar/{relative}"
+            ], cwd=REPO)
+            actual = archive.read(entry)
+            assert actual == expected, f"Stale packaged resource: {relative}"
+            hashes[entry] = hashlib.sha256(actual).hexdigest()
+        entry = UI_PREFIX + "agent-sidebar.bundle.js"
+        hashes[entry] = hashlib.sha256(archive.read(entry)).hexdigest()
+        assert hashes[entry] == bundle_sha256, "Sidebar bundle mismatch"
+    return {"resource_sha256": hashes, "xul_sha256": native.sha(xul),
+            "source_commit": source_commit, "build_id": build_id}
 
 
 def wait_for(predicate, label, timeout=30):
@@ -71,14 +116,17 @@ class Endpoint(BaseHTTPRequestHandler):
 
 
 class Browser:
-    def __init__(self, app, profile, output, run):
+    def __init__(self, app, profile, output, run, build_id=None):
         self.log = (output / f"firefox-{run}.log").open("wb")
         with socket.socket() as reserve:
             reserve.bind(("127.0.0.1", 0))
             port = reserve.getsockname()[1]
-        env = {k: v for k, v in os.environ.items() if not k.startswith(("MOZ_FRX_", "FRX_ENV_", "XRE_PROFILE_"))}
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("MOZ_FRX_", "FRX_ENV_", "XRE_PROFILE_", "MOZ_DISABLE_CONTENT_SANDBOX"))}
+        env["MOZ_MARIONETTE"] = "1"
         env["MOZ_MARIONETTE_PREF_STATE_ACROSS_RESTARTS"] = json.dumps({"marionette.port": port})
-        self.process = subprocess.Popen([str(app / "firefox.exe"), "-headless", "-no-remote", "-no-deelevate", "-wait-for-browser", "-profile", str(profile), "-purgecaches", "-marionette", "-remote-allow-system-access", "about:blank"], env=env, stdout=self.log, stderr=self.log, creationflags=subprocess.CREATE_NO_WINDOW)
+        executable, _, _ = application_paths(app)
+        flags = ["-no-deelevate", "-wait-for-browser"] if os.name == "nt" else []
+        self.process = subprocess.Popen([str(executable), "-headless", "-new-instance", "-no-remote", *flags, "-profile", str(profile), "-purgecaches", "-marionette", "-remote-allow-system-access", "about:blank"], env=env, stdout=self.log, stderr=self.log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self.connection = None
         self.wire = None
         try:
@@ -89,13 +137,16 @@ class Browser:
                     return True
                 except OSError:
                     return False
-            wait_for(connect, "Marionette startup", 40)
+            wait_for(connect, "Marionette startup", 90)
             self.connection.settimeout(40)
             self.wire = native.Wire(self.connection)
             self.wire.read()
             self.wire.command("WebDriver:NewSession", {})
             self.wire.command("Marionette:SetContext", {"value": "chrome"})
-            self.execute("await win.SidebarController.show('viewAgentSidebar'); await until(() => doc()?.querySelector('[aria-label=\"设置\"]')); return {build: Services.appinfo.appBuildID, version: Services.appinfo.version};")
+            identity = self.execute("await win.SidebarController.show('viewAgentSidebar'); await until(() => doc()?.querySelector('[aria-label=\"设置\"]')); return {build: Services.appinfo.appBuildID, profile:Services.dirsvc.get('ProfD',Ci.nsIFile).path};")
+            assert Path(identity["profile"]).samefile(profile), "Unexpected profile; refusing to modify settings"
+            if build_id:
+                assert identity["build"] == build_id, "Runtime BuildID mismatch"
         except BaseException:
             self.close(force=True)
             raise
@@ -147,7 +198,15 @@ class Browser:
         finally:
             if self.connection:
                 self.connection.close()
-            native.stop(self.process)
+            if os.name == "nt":
+                native.stop(self.process)
+            elif self.process.poll() is None:
+                self.process.terminate()
+                try:
+                    self.process.wait(timeout=15)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
+                    self.process.wait(timeout=15)
             self.log.close()
 
 
@@ -177,18 +236,25 @@ def prepare(package, root):
 def verify(args):
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    assert os.name == "nt", "This native verification requires Windows"
-    report = {"status": "failed", "platform": "Windows", "package_sha256": native.sha(args.package), "checks": [], "browser_exit_codes": []}
-    assert report["package_sha256"] == args.package_sha256.lower(), "Package SHA256 mismatch"
-    root = Path(tempfile.mkdtemp(prefix="frx-global-prompt-", dir=output))
+    report = {"status": "failed", "platform": platform.system(), "architecture": platform.machine(),
+              "mode": "final-package" if args.app else "resource-overlay", "checks": [], "browser_exit_codes": []}
+    if args.package:
+        assert os.name == "nt", "The legacy overlay fixture requires Windows"
+        report["package_sha256"] = native.sha(args.package)
+        assert report["package_sha256"] == args.package_sha256.lower(), "Package SHA256 mismatch"
+    root = Path(tempfile.mkdtemp(prefix="frx-global-prompt-"))
     browser = None
     server = ThreadingHTTPServer(("127.0.0.1", 0), Endpoint)
     server.records = []
     server.release = threading.Event()
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
-        app, resources = prepare(args.package, root)
-        report.update(resource_sha256=resources, xul_sha256=native.sha(app / "xul.dll"))
+        if args.app:
+            app = args.app.resolve()
+            report.update(verify_final_resources(app, args.source_commit, args.build_id, args.bundle_sha256))
+        else:
+            app, resources = prepare(args.package, root)
+            report.update(resource_sha256=resources, xul_sha256=native.sha(app / "xul.dll"))
         profile = root / "profile"
         profile.mkdir()
         (profile / "user.js").write_text('\n'.join([
@@ -200,7 +266,7 @@ def verify(args):
             'user_pref("toolkit.telemetry.enabled",false);',
             'user_pref("app.update.auto",false);',
         ]), encoding="utf-8")
-        browser = Browser(app, profile, output, 1)
+        browser = Browser(app, profile, output, 1, args.build_id)
         report.update(browser.execute("return {build:Services.appinfo.appBuildID,version:Services.appinfo.version,release:Services.prefs.getStringPref('extensions.firefox-reverse.version')};"))
         ids = browser.execute("store.setContextStrategy('legacy');store.setPromptCacheMode('off');return ['model-a','model-b'].map(model=>store.createModelProfile({name:model,provider:'custom',model,baseUrl:input,protocol:'openai',apiKey:'synthetic-test'}).id);", f"http://127.0.0.1:{server.server_address[1]}")
         assert browser.save(PROMPT_A) == PROMPT_A
@@ -231,7 +297,7 @@ def verify(args):
         first_system = inspect("NATIVE_FIRST", PROMPT_A, "model-b", 1)[0]["system"]
         report["checks"].append("sidebar send appends custom policy once after built-in system")
         report["browser_exit_codes"].append(browser.close())
-        browser = Browser(app, profile, output, 2)
+        browser = Browser(app, profile, output, 2, args.build_id)
         value = browser.execute("await settings();return doc().querySelector('.settings-pane textarea').value;")
         assert value == PROMPT_A
         browser.send("NATIVE_RESTART")
@@ -282,7 +348,14 @@ def verify(args):
         report["checks"].append("clearing in UI restores byte-identical built-in prompt")
         report["browser_exit_codes"].append(browser.close())
         browser = None
+        if args.app:
+            after = verify_final_resources(app, args.source_commit, args.build_id, args.bundle_sha256)
+            assert after["resource_sha256"] == report["resource_sha256"], "Package resources changed during verification"
+            assert after["xul_sha256"] == report["xul_sha256"], "XUL changed during verification"
+            report["package_unchanged"] = True
         report["status"] = "passed"
+        report["limitations"] = ["Synthetic localhost model responses, not paid provider acceptance.",
+                                 "The test closes its ledger connection before normal browser shutdown."]
         report["requests"] = [{"task": r["task"], "model": r["model"], "system_sha256": hashlib.sha256(r["system"].encode()).hexdigest(), "custom_policy_count": r["system"].count("NATIVE_POLICY_")} for r in server.records]
         print(json.dumps(report, ensure_ascii=False, indent=2), flush=True)
     except Exception as error:
@@ -298,11 +371,29 @@ def verify(args):
             text = path.read_text(encoding="utf-8", errors="replace").replace(str(root), "<isolated-test-root>")
             path.write_text(text, encoding="utf-8")
         (output / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        for attempt in range(20):
+            try:
+                shutil.rmtree(root)
+                break
+            except PermissionError:
+                if attempt == 19:
+                    raise
+                time.sleep(1)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--package", type=Path, required=True)
-    parser.add_argument("--package-sha256", required=True)
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--package", type=Path, help="Windows ZIP resource-overlay fixture (not release acceptance)")
+    target.add_argument("--app", type=Path, help="Unmodified extracted application directory or executable")
+    parser.add_argument("--package-sha256")
+    parser.add_argument("--source-commit")
+    parser.add_argument("--build-id")
+    parser.add_argument("--bundle-sha256")
     parser.add_argument("--output", type=Path, required=True)
-    verify(parser.parse_args())
+    args = parser.parse_args()
+    required = ("source_commit", "build_id", "bundle_sha256") if args.app else ("package_sha256",)
+    for name in required:
+        if not getattr(args, name):
+            parser.error("--" + name.replace("_", "-") + " is required for this mode")
+    verify(args)

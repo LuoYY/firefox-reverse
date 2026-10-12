@@ -54,6 +54,7 @@ done
 run node "$REPO_ROOT/scripts/check-branding-assets.mjs"
 run python3 "$REPO_ROOT/scripts/tests/test-branding.py"
 run python3 "$REPO_ROOT/scripts/tests/test-startup-diagnostics.py"
+run python3 "$REPO_ROOT/scripts/tests/test-global-system-prompt-verifier.py"
 
 echo
 echo "agent tool selftests: all passed"

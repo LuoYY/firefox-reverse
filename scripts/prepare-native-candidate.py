@@ -96,10 +96,12 @@ with zipfile.ZipFile(resource_root / "omni.ja") as archive:
     assert b"#promiseXULFrameLoaderCreated" in extension_parent
     extension_parent_sha = hashlib.sha256(extension_parent).hexdigest()
 assert tag[1:] in expected.decode()
-modules = ["EnvironmentBackend", "NativeFingerprintPolicy", "ConfigStore", "SidebarTypography", "LlmClient", "PageBackend", "PageInteractionBackend", "PageInteractionCore", "AgentInteractionChild", "Tools"]
+modules = ["EnvironmentBackend", "NativeFingerprintPolicy", "ConfigStore", "AgentSession", "SidebarTypography", "LlmClient", "PageBackend", "PageInteractionBackend", "PageInteractionCore", "AgentInteractionChild", "Tools"]
 with zipfile.ZipFile(resource_root / "browser/omni.ja") as archive:
     ui_prefix = "chrome/browser/content/browser/agent-sidebar/"
     bundle_sha = hashlib.sha256(archive.read(ui_prefix + "agent-sidebar.bundle.js")).hexdigest()
+    if os.environ.get("EXPECTED_SIDEBAR_BUNDLE"):
+        assert bundle_sha == sha(os.environ["EXPECTED_SIDEBAR_BUNDLE"]), "sidebar bundle differs from rebuilt source"
     expected_css = subprocess.check_output(["git", "show", f"{commit}:additions/browser/components/agent-sidebar/content/agent-panel.css"])
     assert archive.read(ui_prefix + "agent-panel.css") == expected_css, "stale sidebar styles"
     for module in modules:
@@ -111,5 +113,5 @@ report = {"package": name, "packageSHA256": sha(package), "xulSHA256": sha(xul),
 report["branding"] = branding_report
 (output / "PACKAGE-IDENTITY.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:
-    stream.write(f"FRX_TEST_BINARY={binary}\nFRX_TEST_XUL_SHA={report['xulSHA256']}\n")
+    stream.write(f"FRX_TEST_BINARY={binary}\nFRX_TEST_XUL_SHA={report['xulSHA256']}\nFRX_TEST_BUNDLE_SHA={bundle_sha}\n")
 print(json.dumps(report))

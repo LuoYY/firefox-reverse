@@ -1,5 +1,24 @@
 # 全局 system 提示词原生验证
 
+## 最终安装包验收入口
+
+v0.26.1 发布准备新增跨平台 `--app` 模式，直接测试从候选安装包解压的应用，不覆盖 `omni.ja` 或其他资源。先通过 `prepare-native-candidate.py` 核对下载包 SHA256、架构、品牌、BuildID、SourceStamp 及模块字节，并将固定 `source_commit` 经 lockfile 重新构建的 sidebar bundle 与包内资源核对，再运行：
+
+```sh
+python3 scripts/verify-global-system-prompt.py \
+  --app "$FRX_TEST_BINARY" \
+  --source-commit "$SOURCE_COMMIT" \
+  --build-id "$EXPECTED_BUILD_ID" \
+  --bundle-sha256 "$FRX_TEST_BUNDLE_SHA" \
+  --output native-report/global-system-prompt
+```
+
+`--app` 接受 macOS `.app` 目录或 Windows/Linux 可执行文件。运行前后核对 AgentSession、ConfigStore、CSS、bundle 和 XUL；校验不符直接失败，不把仓库文件覆盖进去“修复”候选包。独立临时 profile 只使用合成配置和本机模型服务；验收包含原文保存、完整重启、模型/会话切换、历史会话、运行中修改的回合边界、真实自动续跑与清空恢复。现有指纹、页面/Agent、Windows 启动与 Ledger 回归继续保留。
+
+此入口的加入不代表各平台已经通过；完成最终包运行后才更新发布验收结果。下文为作者 PR 阶段的历史资源覆盖测试，不是 v0.26.1 安装包报告。
+
+## PR 阶段历史验收
+
 2026-10-11 验证 PR #21。已合并当前 main `208b83cfac4347fe2e7d2423ff78cb172c0287a6`，其中相对 v0.26.0 的差异仅为发布文档。
 
 ## 验证环境与范围

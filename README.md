@@ -312,6 +312,10 @@ cd upstream && ./mach build && ./mach package
 
 ## 📝 版本更新记录
 
+### v0.26.1（准备中，2026-10-12）
+- **全局附加 system 提示词（PR #21）**：感谢 [@awaxiaoyu](https://github.com/awaxiaoyu) 的贡献。侧栏设置可保存多行提示词，同一 profile 的模型配置和会话共享；追加到内置 system 后，从下一轮用户对话生效，当前任务与自动续跑保持原快照，避免重复追加。默认留空或清空后沿用内置提示词，不迁移旧用户配置。
+- **最终包验收**：增加未修改安装包的资源与源码逐字节核对，以及保存、重启持久化、切换模型/会话、运行中修改、自动续跑和清空恢复的真实侧栏测试。PR 的资源覆盖验收仍保留为历史证据，不能替代最终发布包验证；构建、原生验收与发布状态以 Release 为准。
+
 ### v0.26.0（正式版，2026-10-11）
 - **页面定位（Issue #15）**：新增 `page_frames/page_snapshot/page_find`，支持 role/name/label、open shadow root 和跨域嵌套 iframe；`page_click/type/scroll` 可使用短引用，跳转后旧引用失效。坐标点击使用选定 frame 的 viewport CSS 像素，截图返回坐标系与缩放信息。旧 selector/text 调用保持兼容，工具总数 71。见[页面定位](docs/page-interaction.md)。
 - **启动兼容（Issue #18 排查支持）**：独立环境补充有效的 `-new-instance`；默认 profile 确认丢失时提供原生管理器供用户选择，不自动迁移、重置或解锁。增加只读环境/安装默认项诊断。报告者 macOS 27 根因仍未确认，不把相关日志或启动参数当作完整修复证明。

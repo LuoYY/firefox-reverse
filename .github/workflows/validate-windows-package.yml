@@ -64,6 +64,10 @@ jobs:
           repository: WhiteNightShadow/frx-director-mcp
           ref: ${{ inputs.mcp_commit }}
           path: mcp-fixture
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.source_commit }}
+          path: source-fixture
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -74,6 +78,11 @@ jobs:
         working-directory: mcp-fixture
         run: npm ci
       - working-directory: mcp-fixture
+        run: npm run build
+      - name: Rebuild exact-source sidebar for package comparison
+        working-directory: source-fixture/additions/browser/components/agent-sidebar
+        run: npm ci
+      - working-directory: source-fixture/additions/browser/components/agent-sidebar
         run: npm run build
       - name: Download candidate
         shell: bash
@@ -89,6 +98,8 @@ jobs:
           esac
           gh release download "$RELEASE_TAG" --pattern "firefox-reverse-${RELEASE_TAG}-${PACKAGE_TARGET}.${ext}" --dir candidate
       - name: Verify package identity and extract
+        env:
+          EXPECTED_SIDEBAR_BUNDLE: source-fixture/additions/browser/components/agent-sidebar/content/agent-sidebar.bundle.js
         run: python scripts/prepare-native-candidate.py
       - name: Native fingerprint and Unicode profile checks
         shell: bash
@@ -98,6 +109,9 @@ jobs:
       - name: Page interaction and cross-origin frame checks
         shell: bash
         run: node scripts/verify-page-interaction.mjs --firefox "$FRX_TEST_BINARY" --xul-sha256 "$FRX_TEST_XUL_SHA" --mcp-root "$GITHUB_WORKSPACE/mcp-fixture" --output native-report/PAGE-REPORT.json --screenshot native-report/page-fixture.png
+      - name: Global system prompt in unmodified final package
+        shell: bash
+        run: python scripts/verify-global-system-prompt.py --app "$FRX_TEST_BINARY" --source-commit "$SOURCE_COMMIT" --build-id "$EXPECTED_BUILD_ID" --bundle-sha256 "$FRX_TEST_BUNDLE_SHA" --output native-report/global-system-prompt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
