@@ -706,7 +706,9 @@ static void DumpFunctionArgs(JSContext* cx, JSScript* script) {
     for (unsigned i = 0; i < numActualArgs; i++) {
       if (i > 0) fputs(",", gOutFile);
       JS::RootedValue v(cx, frame.unaliasedActual(i));
-      SerializeValue(cx, v, gOutFile);
+      // 与 _locals 的 args 保持同款深序列化：浅层 <object> 占位会让 eval 展开
+      // 代码的实参（数组/小整数分派值）在离线挖掘时全部丢失。
+      SerializeValueDeep(cx, v, gOutFile, gDumpDepth);
     }
     fputs("]}}\n", gOutFile);
     fflush(gOutFile);
